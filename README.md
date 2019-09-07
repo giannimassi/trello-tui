@@ -1,4 +1,4 @@
-# trello-cli
+# trello-tui
 
 ### A terminal ui for trello
 
@@ -12,5 +12,5 @@ export TRELLO_TOKEN=token
 
 Run with the following command:
 ```
-go run main.go board-name
+go run main.go -refresh=30s -board="Board Name"
 ```

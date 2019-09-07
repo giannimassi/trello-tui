@@ -1,141 +1,121 @@
 package gui
 
 import (
-	"fmt"
-	"strings"
+	"runtime/debug"
 
+	"github.com/giannimassi/trello-tui/pkg/gui/components"
+	"github.com/giannimassi/trello-tui/pkg/gui/state"
 	"github.com/jesseduffield/gocui"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
-type Data interface {
-	Name() string
-	Description() string
-	ListsNames() []string
+type Config struct {
+	Dev bool // Enable developer features (recover on run panics)
 }
 
-type Config struct{}
+type StateFunc func() *state.State
 
-type App struct {
+type Gui struct {
 	l   zerolog.Logger
 	cfg *Config
 
-	b Data
-	g *gocui.Gui
+	stateFunc StateFunc
+
+	gui   *gocui.Gui
+	ctx   *components.Context
+	views *components.Container
 }
 
-func NewApp(log zerolog.Logger, cfg *Config, data Data) *App {
-	return &App{
+func NewGui(log zerolog.Logger, cfg *Config) *Gui {
+	return &Gui{
 		l:   log,
 		cfg: cfg,
-		b:   data,
 	}
 }
 
-func (a *App) Init() error {
-	a.l.Debug().Msg("Initializing gui")
-	gui := gocui.NewGui()
-	if err := gui.Init(); err != nil {
-		a.l.Error().Err(err).Msg("Could not initialize gui")
-		return err
-	}
-	a.g = gui
-	a.g.SetLayout(a.layout)
-
-	if err := a.g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, a.quit); err != nil {
-		a.l.Error().Err(err).Msg("Could not setup key binding for ctrl + c")
-		return err
-	}
-	a.l.Debug().Msg("Gui initialized")
-	return nil
-}
-
-func (a *App) Run() error {
-	if err := a.g.MainLoop(); err != nil && err != gocui.ErrQuit {
-		a.l.Error().Err(err).Msg("Unexpected error while running application")
-		return err
-	}
-	return nil
-}
-
-func (a *App) Close() {
-	a.g.Close()
-}
-
-func (a *App) layout(g *gocui.Gui) error {
-	var (
-		maxX, maxY = a.g.Size()
-		W          = maxX - 2
-		H          = maxY - 2
-		x0         = 1
-		y0         = 1
-	)
-
-	w, err := a.drawLists(x0, y0+5, W, H-5)
+func (g *Gui) Init(stateFunc StateFunc) error {
+	g.stateFunc = stateFunc
+	g.ctx = components.NewGuiContext(g.stateFunc())
+	gui, err := gocui.NewGui(gocui.OutputNormal, false)
 	if err != nil {
-		log.Warn().Err(err).Msg("while drawing lists")
+		g.l.Error().Err(err).Msg("Could not initialize gui")
 		return err
 	}
+	g.gui = gui
+	g.gui.FgColor = gocui.ColorWhite
+	g.gui.BgColor = gocui.ColorBlack
 
-	err = a.drawMainTitle(x0, y0, w, 3)
-	if err != nil {
-		log.Warn().Err(err).Msg("while setting main view title")
+	// Selected view
+	g.gui.Highlight = true
+	g.gui.SelFgColor = gocui.ColorGreen
+	g.gui.SelBgColor = gocui.ColorDefault
+
+	g.gui.SetManagerFunc(g.layout)
+	if err = g.setupKeyBindings(); err != nil {
+		g.l.Error().Err(err).Msg("Could not setup key bindings")
 		return err
+	}
+	g.views = components.NewContainer(g)
+	g.l.Info().Msg("Initialized")
+	return nil
+}
+
+func (g *Gui) layout(gui *gocui.Gui) error {
+	g.ctx.Set(g.stateFunc())
+	err := g.views.Draw(gui, g.ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("while drawing gui")
+		return err
+	}
+	return nil
+}
+
+func (g *Gui) Sync() {
+	g.gui.Update(func(g *gocui.Gui) error { return nil })
+}
+
+func (g *Gui) Run() error {
+	defer func() {
+		if r := recover(); r != nil {
+			if g.cfg.Dev {
+				g.l.Error().Interface("recovered", r).Msg("Unexpected panic while running application")
+				_, _ = g.l.Write(debug.Stack())
+			}
+		}
+	}()
+
+	g.l.Debug().Msg("Running")
+	if err := g.gui.MainLoop(); err != nil && err != gocui.ErrQuit {
+		g.l.Error().Err(err).Msg("Unexpected error while running application")
+		return err
+	}
+	return nil
+}
+
+func (g *Gui) Close() {
+	g.l.Debug().Msg("Closing")
+	g.gui.Close()
+}
+
+func (g *Gui) Size() (int, int) {
+	w, h := g.gui.Size()
+	return w - 1, h - 1
+}
+
+func (g *Gui) Position() (float64, float64) {
+	return 0, 0
+}
+
+func (g *Gui) setupKeyBindings() error {
+	if err := g.gui.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, g.quit); err != nil {
+		return errors.Wrapf(err, "while setting up key binding ctrl + c")
 	}
 
 	return nil
 }
 
-func (a *App) quit(g *gocui.Gui, v *gocui.View) error {
+func (g *Gui) quit(gui *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit
-}
-
-func (a *App) drawMainTitle(X0, Y0, W, H int) error {
-	if v, err := a.g.SetView("main", X0, Y0, X0+W, Y0+H); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-
-		var descStr string
-		if desc := a.b.Description(); len(desc) != 0 {
-			descStr = fmt.Sprintf(", Description: %s", a.b.Description())
-		}
-		_, err := fmt.Fprintf(v, " Board: %s"+descStr, a.b.Name())
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (a *App) drawLists(X0, Y0, W, H int) (int, error) {
-	var (
-		listNames = a.b.ListsNames()
-		w         = W / len(listNames)
-	)
-	for i, name := range listNames {
-		err := a.drawList(X0+i*w, Y0, w, H, name)
-		if err != nil {
-			return W, err
-		}
-	}
-	return w * len(listNames), nil
-}
-
-func (a *App) drawList(X0, Y0, W, H int, name string) error {
-	if v, err := a.g.SetView(listViewName(name), X0, Y0, X0+W, Y0+H); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		_, err := fmt.Fprint(v, name)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func listViewName(listName string) string {
-	return fmt.Sprintf("list_%s", strings.ReplaceAll(listName, " ", "_"))
 }

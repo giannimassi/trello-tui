@@ -1,4 +1,4 @@
-module github.com/giannimassi/trello-cli
+module github.com/giannimassi/trello-tui
 
 go 1.12
 
@@ -9,5 +9,7 @@ require (
 	github.com/jesseduffield/termbox-go v0.0.0-20190630083001-9dd53af7214e // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/pkg/errors v0.8.1
+	github.com/rakyll/autopprof v0.1.0
 	github.com/rs/zerolog v1.15.0
+	golang.org/x/tools v0.0.0-20190425163242-31fd60d6bfdc
 )

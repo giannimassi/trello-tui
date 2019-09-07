@@ -9,26 +9,37 @@ func (s *absoluteSize) Apply(x0, y0, x1, y1 *int) {
 	*y1 = *y0 + s.h
 }
 
+func (s *absoluteSize) Resize(w, h float64) {
+	s.w = int(w)
+	s.h = int(h)
+}
+
 type relativeSize struct {
 	absoluteSize
-	parent Parent
+	Parent ParentFunc
 	wR, hR float64
 }
 
-func newRelativeSize(parent Parent, widthR, heightR float64) *relativeSize {
+func newRelativeSize(pFunc ParentFunc, widthR, heightR float64) *relativeSize {
 	return &relativeSize{
-		parent: parent,
+		Parent: pFunc,
 		wR:     widthR,
 		hR:     heightR,
 	}
 }
 
 func (s *relativeSize) Apply(x0, y0, x1, y1 *int) {
-	s.w, s.h = s.evalSize()
+	s.absoluteSize.Resize(s.evalSize())
 	s.absoluteSize.Apply(x0, y0, x1, y1)
 }
 
-func (s *relativeSize) evalSize() (w, h int) {
-	W, H := s.parent.Size()
-	return applyRatio(W, s.wR), applyRatio(H, s.hR)
+func (s *relativeSize) Resize(wR, hR float64) {
+	s.wR = wR
+	s.hR = hR
+}
+
+func (s *relativeSize) evalSize() (w, h float64) {
+	p := s.Parent()
+	W, H := p.Size()
+	return applyRatioToInt(W, s.wR), applyRatioToInt(H, s.hR)
 }

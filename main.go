@@ -1,71 +1,82 @@
 package main
 
 import (
-	"context"
+	"flag"
+	"fmt"
 	"os"
 	"time"
 
+	"github.com/giannimassi/trello-tui/pkg/app"
+	"github.com/giannimassi/trello-tui/pkg/gui"
+	"github.com/giannimassi/trello-tui/pkg/trello"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-
-	"github.com/giannimassi/trello-cli/pkg/gui"
-	"github.com/giannimassi/trello-cli/pkg/trello"
 )
 
 const (
 	TrelloUser  = "TRELLO_USER"
 	TrelloKey   = "TRELLO_KEY"
 	TrelloToken = "TRELLO_TOKEN"
+
+	minRefreshInterval     = time.Second * 1
+	defaultRefreshInterval = time.Second * 10
 )
 
-type config struct {
-	Trello *trello.Config
-	Gui    *gui.Config
-}
+func setup() (app.Config, func()) {
+	f, err := os.OpenFile("trello-tui.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Unexpected error while opening file for logging. Stopping application")
+	}
+	_, _ = f.Write([]byte("\n"))
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: f})
+	boardName := flag.String("board", "", "board name")
+	refresh := flag.Duration("refresh", defaultRefreshInterval, fmt.Sprintf("refresh interval (min=%v)", minRefreshInterval))
+	v := flag.Bool("vv", false, "Increase verbosity level")
+	flag.Parse()
 
-func setup() config {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-
-	if len(os.Args) < 2 {
-		log.Fatal().Msg("Board name not provided")
+	if *refresh < minRefreshInterval {
+		log.Warn().Msg("Minimum value for refresh interval is 10 s")
+		*refresh = minRefreshInterval
 	}
 
-	return config{
+	if !*v {
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+
+	return app.Config{
 		Trello: &trello.Config{
-			User:            os.Getenv(TrelloUser),
-			Key:             os.Getenv(TrelloKey),
-			Token:           os.Getenv(TrelloToken),
-			Board:           os.Args[1],
-			RefreshInterval: time.Second * 20,
+			User:  os.Getenv(TrelloUser),
+			Key:   os.Getenv(TrelloKey),
+			Token: os.Getenv(TrelloToken),
 		},
-		Gui: &gui.Config{},
-	}
+		Gui: &gui.Config{
+			Dev: *v,
+		},
+		RefreshInterval: *refresh,
+		SelectBoard:     *boardName,
+	}, func() { f.Close() }
 }
 
 func main() {
 	var (
-		cfg = setup()
-		t   = trello.NewClient(log.Logger.With().Str("m", "trello").Logger(), cfg.Trello)
-		a   = gui.NewApp(log.Logger.With().Str("m", "gui").Logger(), cfg.Gui, t)
+		cfg, cleanup = setup()
+		a            = app.NewApp(log.Logger, &cfg)
 	)
+	defer func() {
+		log.Info().Msg("Quitting trello-tui")
+		cleanup()
+	}()
 
-	log.Info().Msg("Starting trello-cli")
-
-	// Init client and start refresh loop in go routine
-	if err := t.Init(); err != nil {
+	log.Info().Msg("Starting trello-tui")
+	if err := a.Init(); err != nil {
+		log.Error().Err(err).Msg("Unexpected error while initializing. Stopping application")
 		return
 	}
-	ctx, cancel := context.WithCancel(context.Background())
-	go t.RefreshLoop(ctx)
-	defer cancel()
 
-	// Init gui and run it
-	err := a.Init()
-	defer a.Close()
-	if err != nil {
-		return
-	}
 	if err := a.Run(); err != nil {
-		return
+		log.Error().Err(err).Msg("Unexpected error while running. Stopping application")
 	}
+	a.Close()
 }

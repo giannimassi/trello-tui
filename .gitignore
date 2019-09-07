@@ -1,4 +1,5 @@
 .idea
-.trello-cli
-trello-cli
+.trello-tui
+trello-tui
 
+trello-tui.log
