@@ -139,6 +139,11 @@ func (a *App) Run() error {
 }
 
 func (a *App) Close() {
+	a.l.Debug().Msg("Closing application")
+	// Save everything
+	if err := a.store.Write(a.store.State()); err != nil {
+		a.l.Warn().Err(err).Msg("Unexpected error while saving state on shutdown")
+	}
 	a.cancelUpdate()
 	a.gui.Close()
 }
