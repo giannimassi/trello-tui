@@ -120,7 +120,6 @@ func (s *State) KeyPressed(k gocui.Key, m gocui.Modifier) {
 		s.moveInList(-1)
 	case gocui.KeyArrowDown:
 		s.moveInList(1)
-
 	case gocui.KeyEnter:
 		log.Warn().Msg("Enter not implemented")
 	case gocui.KeyEsc:
@@ -129,16 +128,11 @@ func (s *State) KeyPressed(k gocui.Key, m gocui.Modifier) {
 }
 
 func (s *State) moveInBoard(offset int) {
-	log.Warn().Int("offset", offset).Int("prev-list-index", s.Nav.SelectedListIndex).Int("prev-card-id", s.Nav.SelectedCardID).Msg("Move in board")
 	s.Nav.SelectedListIndex = (s.ListsLen() + s.Nav.SelectedListIndex + offset) % s.ListsLen()
 	s.Nav.SelectedCardID = s.ListCardsIds(s.Nav.SelectedListIndex)[0]
-	cardName, _ := s.CardNameByID(s.Nav.SelectedCardID)
-	listName, _ := s.ListNameByIndex(s.Nav.SelectedListIndex)
-	log.Warn().Int("list-index", s.Nav.SelectedListIndex).Int("card-id", s.Nav.SelectedCardID).Str("list-name", listName).Str("card-name", cardName).Msg("Moved in board")
 }
 
 func (s *State) moveInList(offset int) {
-	log.Warn().Int("offset", offset).Int("prev-list-index", s.Nav.SelectedListIndex).Int("prev-card-id", s.Nav.SelectedCardID).Msg("Move in list")
 	var cardIDS = s.ListCardsIds(s.Nav.SelectedListIndex)
 	for i, v := range cardIDS {
 		if v == s.Nav.SelectedCardID {
@@ -146,9 +140,6 @@ func (s *State) moveInList(offset int) {
 			break
 		}
 	}
-	cardName, _ := s.CardNameByID(s.Nav.SelectedCardID)
-	listName, _ := s.ListNameByIndex(s.Nav.SelectedListIndex)
-	log.Warn().Int("list-index", s.Nav.SelectedListIndex).Int("card-id", s.Nav.SelectedCardID).Str("list-name", listName).Str("card-name", cardName).Msg("Moved in list")
 }
 
 func (s *State) AppendErr(err error) {
