@@ -1,6 +1,7 @@
 package components
 
 import (
+	"github.com/fatih/color"
 	"github.com/giannimassi/trello-tui/pkg/gui/state"
 	"github.com/jroimartin/gocui"
 )
@@ -68,4 +69,15 @@ func (v *Context) CardTitle(idx int) string {
 		return name
 	}
 	return ""
+}
+
+func (v *Context) Color(t ElementClass, isSelected bool) *color.Color {
+	setting, found := DefaultColorSettings[t]
+	if !found {
+		setting = DefaultColorSettings[DefaultClass]
+	}
+	if isSelected {
+		return setting.selected
+	}
+	return setting.normal
 }
