@@ -39,20 +39,12 @@ func NewGui(log zerolog.Logger, cfg *Config) *Gui {
 func (g *Gui) Init(stateFunc StateFunc) error {
 	g.stateFunc = stateFunc
 	g.ctx = components.NewGuiContext(g.stateFunc())
-	gui, err := gocui.NewGui(gocui.Output256)
+	gui, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
 		g.l.Error().Err(err).Msg("Could not initialize gui")
 		return err
 	}
 	g.gui = gui
-	g.gui.FgColor = gocui.ColorWhite
-	g.gui.BgColor = gocui.ColorBlack
-
-	// Selected view
-	g.gui.Highlight = true
-	g.gui.SelFgColor = gocui.ColorGreen
-	g.gui.SelBgColor = gocui.ColorDefault
-
 	g.gui.SetManagerFunc(g.layout)
 	if err = g.setupKeyBindings(); err != nil {
 		g.l.Error().Err(err).Msg("Could not setup key bindings")
