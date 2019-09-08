@@ -100,6 +100,14 @@ type NavigationPosition struct {
 	SelectedCardState CardState
 }
 
+func (n *NavigationPosition) IsListSelected(idx int) bool {
+	return n.SelectedListIndex == idx
+}
+
+func (n *NavigationPosition) IsCardSelected(id int) bool {
+	return n.SelectedCardID == id
+}
+
 // Commands
 
 func (s *State) KeyPressed(k gocui.Key, m gocui.Modifier) {
