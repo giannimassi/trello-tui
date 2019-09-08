@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/VojtechVitek/go-trello"
-	"github.com/jesseduffield/gocui"
+	"github.com/jroimartin/gocui"
 	"github.com/rs/zerolog/log"
 )
 

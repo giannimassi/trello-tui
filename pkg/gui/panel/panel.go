@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/jesseduffield/gocui"
+	"github.com/jroimartin/gocui"
 	"github.com/pkg/errors"
 )
 
@@ -67,19 +67,13 @@ func (p *Panel) Layout(g *gocui.Gui) error {
 	p.position.Apply(&p.x0, &p.y0, &p.x1, &p.y1)
 	p.size.Apply(&p.x0, &p.y0, &p.x1, &p.y1)
 
-	v, err := g.SetView(p.name, p.x0, p.y0, p.x1, p.y1, p.overlaps)
+	v, err := g.SetView(p.name, p.x0, p.y0, p.x1, p.y1)
 	if err != nil && err.Error() != gocui.ErrUnknownView.Error() {
 		return err
 	}
 	p.View = v
 	p.View.Wrap = true
 	p.View.Autoscroll = true
-	if p.parent != nil && p.ParentView == nil {
-		if pp, ok := p.parent.(*Panel); ok {
-			p.ParentView = pp.View
-		}
-	}
-
 	for _, c := range p.children {
 		err := c.Layout(g)
 		if err != nil {

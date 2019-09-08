@@ -2,7 +2,7 @@ package components
 
 import (
 	"github.com/giannimassi/trello-tui/pkg/gui/panel"
-	"github.com/jesseduffield/gocui"
+	"github.com/jroimartin/gocui"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )

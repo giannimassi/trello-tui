@@ -2,7 +2,7 @@ package components
 
 import (
 	"github.com/giannimassi/trello-tui/pkg/gui/state"
-	"github.com/jesseduffield/gocui"
+	"github.com/jroimartin/gocui"
 )
 
 type View interface {

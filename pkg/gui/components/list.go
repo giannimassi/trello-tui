@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/giannimassi/trello-tui/pkg/gui/panel"
-	"github.com/jesseduffield/gocui"
+	"github.com/jroimartin/gocui"
 	"github.com/pkg/errors"
 )
 

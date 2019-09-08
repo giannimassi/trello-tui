@@ -6,7 +6,7 @@ import (
 	"github.com/giannimassi/trello-tui/pkg/gui/components"
 	"github.com/giannimassi/trello-tui/pkg/gui/state"
 	"github.com/hashicorp/go-multierror"
-	"github.com/jesseduffield/gocui"
+	"github.com/jroimartin/gocui"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -39,7 +39,7 @@ func NewGui(log zerolog.Logger, cfg *Config) *Gui {
 func (g *Gui) Init(stateFunc StateFunc) error {
 	g.stateFunc = stateFunc
 	g.ctx = components.NewGuiContext(g.stateFunc())
-	gui, err := gocui.NewGui(gocui.OutputNormal, false)
+	gui, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
 		g.l.Error().Err(err).Msg("Could not initialize gui")
 		return err
