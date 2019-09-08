@@ -50,7 +50,7 @@ func (s *State) ListsLen() int {
 	return len(s.Lists)
 }
 
-func (s *State) ListName(idx int) (string, bool) {
+func (s *State) ListNameByIndex(idx int) (string, bool) {
 	if idx >= len(s.Lists) {
 		return "", false
 	}
@@ -73,7 +73,7 @@ func (s *State) ListCardsIds(idx int) []int {
 	return ids
 }
 
-func (s *State) CardName(cardID int) (string, bool) {
+func (s *State) CardNameByID(cardID int) (string, bool) {
 	for _, c := range s.Cards {
 		if c.IdShort == cardID {
 			return c.Name, true

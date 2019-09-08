@@ -9,9 +9,9 @@ type View interface {
 	Name() string
 	Description() string
 	ListsLen() int
-	ListName(idx int) (string, bool)
+	ListNameByIndex(idx int) (string, bool)
 	ListCardsIds(idx int) []int
-	CardName(idx int) (string, bool)
+	CardNameByID(idx int) (string, bool)
 	Errors() []error
 	Loading() bool
 }
@@ -56,14 +56,14 @@ func (v *Context) HeaderSubtitle() string {
 }
 
 func (v *Context) ListTitle(idx int) string {
-	if name, found := v.View.ListName(idx); found {
+	if name, found := v.View.ListNameByIndex(idx); found {
 		return " " + name + " "
 	}
 	return ""
 }
 
 func (v *Context) CardTitle(idx int) string {
-	if name, found := v.View.CardName(idx); found {
+	if name, found := v.View.CardNameByID(idx); found {
 		return name
 	}
 	return ""
