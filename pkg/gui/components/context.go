@@ -12,8 +12,9 @@ type View interface {
 	ListNameByIndex(idx int) (string, bool)
 	ListCardsIds(idx int) []int
 	CardNameByID(idx int) (string, bool)
-	Errors() []error
+	NavPosition() state.NavigationPosition
 	Loading() bool
+	Errors() []error
 }
 
 type Commands interface {

@@ -22,19 +22,17 @@ type State struct {
 	Lists []trello.List
 	Cards []trello.Card
 
-	ErrorList         []error
-	SelectedBoard     string
-	SelectedListIndex int
-	SelectedCardID    int
-	SelectedCardState CardState
-
-	loading bool
+	ErrorList []error
+	Nav       NavigationPosition
+	loading   bool
 }
 
 func NewState() *State {
 	return &State{
-		Updated:        time.Now(),
-		SelectedCardID: -1,
+		Updated: time.Now(),
+		Nav: NavigationPosition{
+			SelectedCardID: -1,
+		},
 	}
 }
 
@@ -91,6 +89,17 @@ func (s *State) Loading() bool {
 	return s.loading
 }
 
+func (s *State) NavPosition() NavigationPosition {
+	return s.Nav
+}
+
+type NavigationPosition struct {
+	SelectedBoard     string
+	SelectedListIndex int
+	SelectedCardID    int
+	SelectedCardState CardState
+}
+
 // Commands
 
 func (s *State) KeyPressed(k gocui.Key, m gocui.Modifier) {
@@ -112,22 +121,26 @@ func (s *State) KeyPressed(k gocui.Key, m gocui.Modifier) {
 }
 
 func (s *State) moveInBoard(offset int) {
-	log.Warn().Int("offset", offset).Int("prev-list-index", s.SelectedListIndex).Int("prev-card-id", s.SelectedCardID).Msg("Move in board")
-	s.SelectedListIndex = (s.ListsLen() + s.SelectedListIndex + offset) % s.ListsLen()
-	s.SelectedCardID = s.ListCardsIds(s.SelectedListIndex)[0]
-	log.Warn().Int("list-index", s.SelectedListIndex).Int("card-id", s.SelectedCardID).Msg("Moved in board")
+	log.Warn().Int("offset", offset).Int("prev-list-index", s.Nav.SelectedListIndex).Int("prev-card-id", s.Nav.SelectedCardID).Msg("Move in board")
+	s.Nav.SelectedListIndex = (s.ListsLen() + s.Nav.SelectedListIndex + offset) % s.ListsLen()
+	s.Nav.SelectedCardID = s.ListCardsIds(s.Nav.SelectedListIndex)[0]
+	cardName, _ := s.CardNameByID(s.Nav.SelectedCardID)
+	listName, _ := s.ListNameByIndex(s.Nav.SelectedListIndex)
+	log.Warn().Int("list-index", s.Nav.SelectedListIndex).Int("card-id", s.Nav.SelectedCardID).Str("list-name", listName).Str("card-name", cardName).Msg("Moved in board")
 }
 
 func (s *State) moveInList(offset int) {
-	log.Warn().Int("offset", offset).Int("prev-list-index", s.SelectedListIndex).Int("prev-card-id", s.SelectedCardID).Msg("Move in list")
-	var cardIDS = s.ListCardsIds(s.SelectedListIndex)
+	log.Warn().Int("offset", offset).Int("prev-list-index", s.Nav.SelectedListIndex).Int("prev-card-id", s.Nav.SelectedCardID).Msg("Move in list")
+	var cardIDS = s.ListCardsIds(s.Nav.SelectedListIndex)
 	for i, v := range cardIDS {
-		if v == s.SelectedCardID {
-			s.SelectedCardID = cardIDS[(len(cardIDS)+i+offset)%len(cardIDS)]
+		if v == s.Nav.SelectedCardID {
+			s.Nav.SelectedCardID = cardIDS[(len(cardIDS)+i+offset)%len(cardIDS)]
 			break
 		}
 	}
-	log.Warn().Int("list-index", s.SelectedListIndex).Int("card-id", s.SelectedCardID).Msg("Moved in list")
+	cardName, _ := s.CardNameByID(s.Nav.SelectedCardID)
+	listName, _ := s.ListNameByIndex(s.Nav.SelectedListIndex)
+	log.Warn().Int("list-index", s.Nav.SelectedListIndex).Int("card-id", s.Nav.SelectedCardID).Str("list-name", listName).Str("card-name", cardName).Msg("Moved in list")
 }
 
 func (s *State) AppendErr(err error) {
