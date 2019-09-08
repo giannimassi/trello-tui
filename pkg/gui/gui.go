@@ -39,7 +39,7 @@ func NewGui(log zerolog.Logger, cfg *Config) *Gui {
 func (g *Gui) Init(stateFunc StateFunc) error {
 	g.stateFunc = stateFunc
 	g.ctx = components.NewGuiContext(g.stateFunc())
-	gui, err := gocui.NewGui(gocui.OutputNormal)
+	gui, err := gocui.NewGui(gocui.Output256)
 	if err != nil {
 		g.l.Error().Err(err).Msg("Could not initialize gui")
 		return err
