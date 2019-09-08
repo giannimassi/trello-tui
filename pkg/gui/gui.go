@@ -5,6 +5,7 @@ import (
 
 	"github.com/giannimassi/trello-tui/pkg/gui/components"
 	"github.com/giannimassi/trello-tui/pkg/gui/state"
+	"github.com/hashicorp/go-multierror"
 	"github.com/jesseduffield/gocui"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -113,6 +114,44 @@ func (g *Gui) setupKeyBindings() error {
 		return errors.Wrapf(err, "while setting up key binding ctrl + c")
 	}
 
+	if err := g.setupNavigationKeybindings(); err != nil {
+		return errors.Wrapf(err, "while setting up navigation key bindings")
+	}
+
+	return nil
+}
+
+var navigationKeys = [...]gocui.Key{
+	gocui.KeyArrowLeft,
+	gocui.KeyArrowRight,
+	gocui.KeyArrowUp,
+	gocui.KeyArrowDown,
+	gocui.KeyEnter,
+	gocui.KeyEsc,
+	// TODO: Setup vim keys for navigation optionally
+}
+
+func (g *Gui) setupNavigationKeybindings() error {
+	var result *multierror.Error
+	for _, k := range navigationKeys {
+		if err := g.bindKeyPressed(k, gocui.ModNone); err != nil {
+			result = multierror.Append(result, err)
+		}
+	}
+	return result.ErrorOrNil()
+}
+
+func (g *Gui) bindKeyPressed(k gocui.Key, m gocui.Modifier) error {
+	keyAdapter := func(f func(k gocui.Key, m gocui.Modifier)) func(gui *gocui.Gui, v *gocui.View) error {
+		return func(gui *gocui.Gui, v *gocui.View) error {
+			f(k, m)
+			return nil
+		}
+	}
+
+	if err := g.gui.SetKeybinding("", k, m, keyAdapter(g.ctx.KeyPressed)); err != nil {
+		return errors.Wrapf(err, "while setting up key binding for left key")
+	}
 	return nil
 }
 

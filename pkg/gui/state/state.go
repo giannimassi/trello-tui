@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/VojtechVitek/go-trello"
+	"github.com/jesseduffield/gocui"
+	"github.com/rs/zerolog/log"
 )
 
 type CardState int
@@ -22,8 +24,8 @@ type State struct {
 
 	ErrorList         []error
 	SelectedBoard     string
-	SelectedList      int
-	SelectedCard      int
+	SelectedListIndex int
+	SelectedCardID    int
 	SelectedCardState CardState
 
 	loading bool
@@ -31,8 +33,8 @@ type State struct {
 
 func NewState() *State {
 	return &State{
-		Updated:      time.Now(),
-		SelectedCard: -1,
+		Updated:        time.Now(),
+		SelectedCardID: -1,
 	}
 }
 
@@ -91,9 +93,41 @@ func (s *State) Loading() bool {
 
 // Commands
 
-func (s *State) Navigate(listID, cardID int) {
-	s.SelectedList = listID
-	s.SelectedCard = cardID
+func (s *State) KeyPressed(k gocui.Key, m gocui.Modifier) {
+	switch k {
+	case gocui.KeyArrowLeft:
+		s.moveInBoard(-1)
+	case gocui.KeyArrowRight:
+		s.moveInBoard(1)
+	case gocui.KeyArrowUp:
+		s.moveInList(-1)
+	case gocui.KeyArrowDown:
+		s.moveInList(1)
+
+	case gocui.KeyEnter:
+		log.Warn().Msg("Enter not implemented")
+	case gocui.KeyEsc:
+		log.Warn().Msg("Esc not implemented")
+	}
+}
+
+func (s *State) moveInBoard(offset int) {
+	log.Warn().Int("offset", offset).Int("prev-list-index", s.SelectedListIndex).Int("prev-card-id", s.SelectedCardID).Msg("Move in board")
+	s.SelectedListIndex = (s.ListsLen() + s.SelectedListIndex + offset) % s.ListsLen()
+	s.SelectedCardID = s.ListCardsIds(s.SelectedListIndex)[0]
+	log.Warn().Int("list-index", s.SelectedListIndex).Int("card-id", s.SelectedCardID).Msg("Moved in board")
+}
+
+func (s *State) moveInList(offset int) {
+	log.Warn().Int("offset", offset).Int("prev-list-index", s.SelectedListIndex).Int("prev-card-id", s.SelectedCardID).Msg("Move in list")
+	var cardIDS = s.ListCardsIds(s.SelectedListIndex)
+	for i, v := range cardIDS {
+		if v == s.SelectedCardID {
+			s.SelectedCardID = cardIDS[(len(cardIDS)+i+offset)%len(cardIDS)]
+			break
+		}
+	}
+	log.Warn().Int("list-index", s.SelectedListIndex).Int("card-id", s.SelectedCardID).Msg("Moved in list")
 }
 
 func (s *State) AppendErr(err error) {

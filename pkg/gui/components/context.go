@@ -2,6 +2,7 @@ package components
 
 import (
 	"github.com/giannimassi/trello-tui/pkg/gui/state"
+	"github.com/jesseduffield/gocui"
 )
 
 type View interface {
@@ -16,7 +17,7 @@ type View interface {
 }
 
 type Commands interface {
-	Navigate(listID, cardID int)
+	KeyPressed(k gocui.Key, m gocui.Modifier)
 }
 
 type Context struct {

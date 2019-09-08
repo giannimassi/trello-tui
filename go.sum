@@ -3,6 +3,10 @@ github.com/VojtechVitek/go-trello v0.0.0-20161023024849-28ebf2756ecc/go.mod h1:B
 github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=
 github.com/go-errors/errors v1.0.1 h1:LUHzmkK3GUKUrL/1gfBUxAHzcev3apQlezX/+O7ma6w=
 github.com/go-errors/errors v1.0.1/go.mod h1:f4zRHt4oKfwPJE5k8C9vpYG+aDHdBFUsgrm6/TyX73Q=
+github.com/hashicorp/errwrap v1.0.0 h1:hLrqtEDnRye3+sgx6z4qVLNuviH3MR5aQ0ykNJa/UYA=
+github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
+github.com/hashicorp/go-multierror v1.0.0 h1:iVjPR7a6H0tWELX5NxNe7bYopibicUzc7uPribsnS6o=
+github.com/hashicorp/go-multierror v1.0.0/go.mod h1:dHtQlpGsu+cZNNAkkCN/P3hoUDHhCYQXV3UM06sGGrk=
 github.com/jesseduffield/gocui v0.3.1-0.20190803023616-ad0cd60f29f9 h1:v2Pf3RaIN+MlFfSDnJw2d9Qksr4Tw08+pjL4LEY+JLM=
 github.com/jesseduffield/gocui v0.3.1-0.20190803023616-ad0cd60f29f9/go.mod h1:2RtZznzYKt8RLRwvFiSkXjU0Ei8WwHdubgnlaYH47dw=
 github.com/jesseduffield/termbox-go v0.0.0-20190630083001-9dd53af7214e h1:tth7wr6+sfSbdpRWWrwvLYyS56HyIRVfq0Qcl2h28wM=
