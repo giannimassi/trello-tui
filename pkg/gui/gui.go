@@ -24,9 +24,9 @@ type Gui struct {
 
 	stateFunc StateFunc
 
-	gui   *gocui.Gui
-	ctx   *components.Context
-	views *components.Container
+	gui           *gocui.Gui
+	ctx           *components.Context
+	viewContainer components.Container
 }
 
 func NewGui(log zerolog.Logger, cfg *Config) *Gui {
@@ -58,14 +58,14 @@ func (g *Gui) Init(stateFunc StateFunc) error {
 		g.l.Error().Err(err).Msg("Could not setup key bindings")
 		return err
 	}
-	g.views = components.NewContainer(g)
+	g.viewContainer = components.NewContainer(g)
 	g.l.Info().Msg("Initialized")
 	return nil
 }
 
 func (g *Gui) layout(gui *gocui.Gui) error {
 	g.ctx.Set(g.stateFunc())
-	err := g.views.Draw(gui, g.ctx)
+	err := g.viewContainer.Draw(gui, g.ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("while drawing gui")
 		return err

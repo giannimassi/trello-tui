@@ -12,8 +12,8 @@ type Header struct {
 	*panel.Panel
 }
 
-func NewHeader(pp panel.Parent, x0, y0, w, h float64) *Header {
-	return &Header{panel.RelativePanel("header", x0, y0, w, h).WithParent(pp)}
+func NewHeader(pp panel.Parent, x0, y0, w, h float64) Header {
+	return Header{panel.RelativePanel("header", x0, y0, w, h).WithParent(pp)}
 }
 
 func (h *Header) Draw(g *gocui.Gui, ctx *Context) error {

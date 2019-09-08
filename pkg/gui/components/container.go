@@ -13,12 +13,12 @@ const (
 
 type Container struct {
 	pp     panel.Parent
-	header *Header
-	lists  []*List
+	header Header
+	lists  []List
 }
 
-func NewContainer(pp panel.Parent) *Container {
-	return &Container{
+func NewContainer(pp panel.Parent) Container {
+	return Container{
 		pp:     pp,
 		header: NewHeader(pp, 0, 0, 1, headerHeight),
 	}
