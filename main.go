@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"time"
 
@@ -23,26 +24,34 @@ const (
 )
 
 func setup() (app.Config, func()) {
-	f, err := os.OpenFile("trello-tui.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Unexpected error while opening file for logging. Stopping application")
-	}
-	_, _ = f.Write([]byte("\n"))
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: f})
 	boardName := flag.String("board", "", "board name")
 	refresh := flag.Duration("refresh", defaultRefreshInterval, fmt.Sprintf("refresh interval (min=%v)", minRefreshInterval))
+	logFlag := flag.Bool("log", false, "Log to file")
 	v := flag.Bool("vv", false, "Increase verbosity level")
 	flag.Parse()
+
+	cleanup := func() {}
+	if *logFlag {
+		f, err := os.OpenFile("trello-tui.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			log.Fatal().Err(err).Msg("Unexpected error while opening file for logging. Stopping application")
+		}
+		_, _ = f.Write([]byte("\n"))
+		cleanup = func() { f.Close() }
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: f})
+		if !*v {
+			zerolog.SetGlobalLevel(zerolog.InfoLevel)
+		} else {
+			zerolog.SetGlobalLevel(zerolog.DebugLevel)
+		}
+	} else {
+		log.Logger = log.Output(ioutil.Discard)
+		zerolog.SetGlobalLevel(zerolog.Disabled)
+	}
 
 	if *refresh < minRefreshInterval {
 		log.Warn().Msg("Minimum value for refresh interval is 10 s")
 		*refresh = minRefreshInterval
-	}
-
-	if !*v {
-		zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	} else {
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 
 	return app.Config{
@@ -56,7 +65,7 @@ func setup() (app.Config, func()) {
 		},
 		RefreshInterval: *refresh,
 		SelectBoard:     *boardName,
-	}, func() { f.Close() }
+	}, cleanup
 }
 
 func main() {
