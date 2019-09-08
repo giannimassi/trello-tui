@@ -4,12 +4,13 @@ go 1.12
 
 require (
 	github.com/VojtechVitek/go-trello v0.0.0-20161023024849-28ebf2756ecc
-	github.com/go-errors/errors v1.0.1 // indirect
-	github.com/jesseduffield/gocui v0.3.1-0.20190803023616-ad0cd60f29f9
-	github.com/jesseduffield/termbox-go v0.0.0-20190630083001-9dd53af7214e // indirect
+	github.com/fatih/color v1.7.0
+	github.com/hashicorp/go-multierror v1.0.0
+	github.com/jroimartin/gocui v0.4.0
+	github.com/mattn/go-colorable v0.1.2 // indirect
+	github.com/mattn/go-isatty v0.0.9 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
+	github.com/nsf/termbox-go v0.0.0-20190817171036-93860e161317 // indirect
 	github.com/pkg/errors v0.8.1
-	github.com/rakyll/autopprof v0.1.0
 	github.com/rs/zerolog v1.15.0
-	golang.org/x/tools v0.0.0-20190425163242-31fd60d6bfdc
 )

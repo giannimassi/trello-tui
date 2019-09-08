@@ -1,10 +1,8 @@
 package components
 
 import (
-	"fmt"
-
 	"github.com/giannimassi/trello-tui/pkg/gui/panel"
-	"github.com/jesseduffield/gocui"
+	"github.com/jroimartin/gocui"
 	"github.com/pkg/errors"
 )
 
@@ -12,8 +10,8 @@ type Header struct {
 	*panel.Panel
 }
 
-func NewHeader(pp panel.Parent, x0, y0, w, h float64) *Header {
-	return &Header{panel.RelativePanel("header", x0, y0, w, h).WithParent(pp)}
+func NewHeader(pp panel.Parent, x0, y0, w, h float64) Header {
+	return Header{panel.RelativePanel("header", x0, y0, w, h).WithParent(pp)}
 }
 
 func (h *Header) Draw(g *gocui.Gui, ctx *Context) error {
@@ -21,10 +19,10 @@ func (h *Header) Draw(g *gocui.Gui, ctx *Context) error {
 		return errors.Wrapf(err, "while laying ot header")
 	}
 	h.Panel.View.Title = ctx.HeaderTitle()
-	h.Panel.View.HasLoader = ctx.Loading()
+	h.Panel.Clear()
+
 	if ctx.HasDescription() {
-		h.Panel.Clear()
-		if _, err := fmt.Fprintf(h.Panel, ctx.Description()); err != nil {
+		if _, err := ctx.Color(BoardDescriptionClass, false).Fprint(h.Panel, ctx.Description()); err != nil {
 			return err
 		}
 	}

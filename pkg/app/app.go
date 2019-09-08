@@ -70,14 +70,14 @@ func (a *App) Init() error {
 	}
 
 	s := a.store.State()
-	if s.SelectedBoard == "" && a.cfg.SelectBoard == "" {
+	if s.Nav.SelectedBoard == "" && a.cfg.SelectBoard == "" {
 		err := errors.New("no board name provided")
 		a.l.Error().Err(err).Msg("Unexpected error while initializing gui")
 		return err
 	}
 
-	if s.SelectedBoard != a.cfg.SelectBoard {
-		s.SelectedBoard = a.cfg.SelectBoard
+	if s.Nav.SelectedBoard != a.cfg.SelectBoard {
+		s.Nav.SelectedBoard = a.cfg.SelectBoard
 		s.SetLoading(true)
 	}
 
@@ -88,7 +88,7 @@ func (a *App) Init() error {
 // if boardName
 func (a *App) updateState() error {
 	s := a.store.State()
-	board, lists, cards, err := a.client.BoardInfo(s.SelectedBoard)
+	board, lists, cards, err := a.client.BoardInfo(s.Nav.SelectedBoard)
 	if err != nil {
 		s.AppendErr(err)
 		return nil
@@ -139,6 +139,11 @@ func (a *App) Run() error {
 }
 
 func (a *App) Close() {
+	a.l.Debug().Msg("Closing application")
+	// Save everything
+	if err := a.store.Write(a.store.State()); err != nil {
+		a.l.Warn().Err(err).Msg("Unexpected error while saving state on shutdown")
+	}
 	a.cancelUpdate()
 	a.gui.Close()
 }

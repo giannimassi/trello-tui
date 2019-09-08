@@ -1,22 +1,25 @@
 package components
 
 import (
+	"github.com/fatih/color"
 	"github.com/giannimassi/trello-tui/pkg/gui/state"
+	"github.com/jroimartin/gocui"
 )
 
 type View interface {
 	Name() string
 	Description() string
 	ListsLen() int
-	ListName(idx int) (string, bool)
+	ListNameByIndex(idx int) (string, bool)
 	ListCardsIds(idx int) []int
-	CardName(idx int) (string, bool)
-	Errors() []error
+	CardNameByID(idx int) (string, bool)
+	NavPosition() state.NavigationPosition
 	Loading() bool
+	Errors() []error
 }
 
 type Commands interface {
-	Navigate(listID, cardID int)
+	KeyPressed(k gocui.Key, m gocui.Modifier)
 }
 
 type Context struct {
@@ -55,15 +58,26 @@ func (v *Context) HeaderSubtitle() string {
 }
 
 func (v *Context) ListTitle(idx int) string {
-	if name, found := v.View.ListName(idx); found {
+	if name, found := v.View.ListNameByIndex(idx); found {
 		return " " + name + " "
 	}
 	return ""
 }
 
 func (v *Context) CardTitle(idx int) string {
-	if name, found := v.View.CardName(idx); found {
+	if name, found := v.View.CardNameByID(idx); found {
 		return name
 	}
 	return ""
+}
+
+func (v *Context) Color(t ElementClass, isSelected bool) *color.Color {
+	setting, found := DefaultColorSettings[t]
+	if !found {
+		setting = DefaultColorSettings[DefaultClass]
+	}
+	if isSelected {
+		return setting.selected
+	}
+	return setting.normal
 }

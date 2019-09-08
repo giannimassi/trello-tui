@@ -80,7 +80,7 @@ func (s *JSONFileStore) readFromFileUnguarded(store *state.State) error {
 	s.l.Debug().Msg("Decoding store")
 	err = decodeStore(f, store)
 	if err != nil {
-		return errors.Wrapf(err, "while decoding store at %state", s.path)
+		return errors.Wrapf(err, "while decoding store at %s", s.path)
 	}
 	return nil
 }

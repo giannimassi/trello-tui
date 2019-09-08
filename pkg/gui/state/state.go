@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/VojtechVitek/go-trello"
+	"github.com/jroimartin/gocui"
+	"github.com/rs/zerolog/log"
 )
 
 type CardState int
@@ -20,19 +22,17 @@ type State struct {
 	Lists []trello.List
 	Cards []trello.Card
 
-	ErrorList         []error
-	SelectedBoard     string
-	SelectedList      int
-	SelectedCard      int
-	SelectedCardState CardState
-
-	loading bool
+	ErrorList []error
+	Nav       NavigationPosition
+	loading   bool
 }
 
 func NewState() *State {
 	return &State{
-		Updated:      time.Now(),
-		SelectedCard: -1,
+		Updated: time.Now(),
+		Nav: NavigationPosition{
+			SelectedCardID: -1,
+		},
 	}
 }
 
@@ -48,7 +48,7 @@ func (s *State) ListsLen() int {
 	return len(s.Lists)
 }
 
-func (s *State) ListName(idx int) (string, bool) {
+func (s *State) ListNameByIndex(idx int) (string, bool) {
 	if idx >= len(s.Lists) {
 		return "", false
 	}
@@ -71,7 +71,7 @@ func (s *State) ListCardsIds(idx int) []int {
 	return ids
 }
 
-func (s *State) CardName(cardID int) (string, bool) {
+func (s *State) CardNameByID(cardID int) (string, bool) {
 	for _, c := range s.Cards {
 		if c.IdShort == cardID {
 			return c.Name, true
@@ -89,11 +89,57 @@ func (s *State) Loading() bool {
 	return s.loading
 }
 
+func (s *State) NavPosition() NavigationPosition {
+	return s.Nav
+}
+
+type NavigationPosition struct {
+	SelectedBoard     string
+	SelectedListIndex int
+	SelectedCardID    int
+	SelectedCardState CardState
+}
+
+func (n *NavigationPosition) IsListSelected(idx int) bool {
+	return n.SelectedListIndex == idx
+}
+
+func (n *NavigationPosition) IsCardSelected(id int) bool {
+	return n.SelectedCardID == id
+}
+
 // Commands
 
-func (s *State) Navigate(listID, cardID int) {
-	s.SelectedList = listID
-	s.SelectedCard = cardID
+func (s *State) KeyPressed(k gocui.Key, m gocui.Modifier) {
+	switch k {
+	case gocui.KeyArrowLeft:
+		s.moveInBoard(-1)
+	case gocui.KeyArrowRight:
+		s.moveInBoard(1)
+	case gocui.KeyArrowUp:
+		s.moveInList(-1)
+	case gocui.KeyArrowDown:
+		s.moveInList(1)
+	case gocui.KeyEnter:
+		log.Warn().Msg("Enter not implemented")
+	case gocui.KeyEsc:
+		log.Warn().Msg("Esc not implemented")
+	}
+}
+
+func (s *State) moveInBoard(offset int) {
+	s.Nav.SelectedListIndex = (s.ListsLen() + s.Nav.SelectedListIndex + offset) % s.ListsLen()
+	s.Nav.SelectedCardID = s.ListCardsIds(s.Nav.SelectedListIndex)[0]
+}
+
+func (s *State) moveInList(offset int) {
+	var cardIDS = s.ListCardsIds(s.Nav.SelectedListIndex)
+	for i, v := range cardIDS {
+		if v == s.Nav.SelectedCardID {
+			s.Nav.SelectedCardID = cardIDS[(len(cardIDS)+i+offset)%len(cardIDS)]
+			break
+		}
+	}
 }
 
 func (s *State) AppendErr(err error) {
