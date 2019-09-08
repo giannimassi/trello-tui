@@ -37,7 +37,6 @@ type Panel struct {
 	size     size
 	position position
 
-	overlaps byte
 	parent   Parent
 	children []Child
 }
