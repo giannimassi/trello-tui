@@ -1,8 +1,6 @@
 package components
 
 import (
-	"fmt"
-
 	"github.com/giannimassi/trello-tui/pkg/gui/panel"
 	"github.com/jroimartin/gocui"
 	"github.com/pkg/errors"
@@ -22,8 +20,9 @@ func (h *Header) Draw(g *gocui.Gui, ctx *Context) error {
 	}
 	h.Panel.View.Title = ctx.HeaderTitle()
 	h.Panel.Clear()
+
 	if ctx.HasDescription() {
-		if _, err := fmt.Fprintf(h.Panel, ctx.Description()); err != nil {
+		if _, err := ctx.Color(BoardDescriptionClass, false).Fprint(h.Panel, ctx.Description()); err != nil {
 			return err
 		}
 	}
