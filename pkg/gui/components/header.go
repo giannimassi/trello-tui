@@ -21,8 +21,8 @@ func (h *Header) Draw(g *gocui.Gui, ctx *Context) error {
 		return errors.Wrapf(err, "while laying ot header")
 	}
 	h.Panel.View.Title = ctx.HeaderTitle()
+	h.Panel.Clear()
 	if ctx.HasDescription() {
-		h.Panel.Clear()
 		if _, err := fmt.Fprintf(h.Panel, ctx.Description()); err != nil {
 			return err
 		}
