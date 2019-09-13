@@ -111,7 +111,6 @@ func (a *App) updateState() error {
 	// write to store also (will block state reads)
 	err = a.store.Write(s)
 	if err != nil {
-		s.ErrorList = append(s.ErrorList, err)
 		return nil
 	}
 

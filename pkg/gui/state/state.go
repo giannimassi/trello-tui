@@ -34,8 +34,8 @@ type State struct {
 	Lists []trello.List
 	Cards []trello.Card
 
-	ErrorList []error
-	Nav       NavigationPosition
+	errors     []error
+	Nav        NavigationPosition
 	BoardState BoardState
 }
 
@@ -111,7 +111,7 @@ func (s *State) CardNameByID(cardID int) (string, bool) {
 }
 
 func (s *State) Errors() []error {
-	return s.ErrorList
+	return s.errors
 }
 
 func (s *State) IsBoardLoading() bool {
@@ -151,7 +151,7 @@ func (s *State) KeyPressed(k gocui.Key, m gocui.Modifier) {
 }
 
 func (s *State) AppendErr(err error) {
-	s.ErrorList = append(s.ErrorList, err)
+	s.errors = append(s.errors, err)
 }
 
 func (s *State) SetBoardState(boardState BoardState) {
