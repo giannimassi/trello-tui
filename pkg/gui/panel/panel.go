@@ -87,10 +87,6 @@ func (p *Panel) Parent() Parent {
 	return p.parent
 }
 
-func (p *Panel) ChildrenLen() int {
-	return len(p.children)
-}
-
 func (p *Panel) Position() (float64, float64) {
 	return float64(p.x0), float64(p.y0)
 }
