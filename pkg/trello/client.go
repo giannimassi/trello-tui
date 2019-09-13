@@ -1,12 +1,15 @@
 package trello
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/VojtechVitek/go-trello"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
+)
+
+var (
+	ErrBoardNotFound = errors.New("board not found")
 )
 
 type Config struct {
@@ -48,7 +51,7 @@ func (t *Client) BoardInfo(name string) (trello.Board, []trello.List, []trello.C
 
 	boards, err := user.Boards()
 	if err != nil {
-		return board, nil, nil, errors.Wrap(err, "could not get boards")
+		return board, nil, nil, ErrBoardNotFound
 	}
 
 	var boardFound bool
@@ -60,7 +63,7 @@ func (t *Client) BoardInfo(name string) (trello.Board, []trello.List, []trello.C
 		}
 	}
 	if !boardFound {
-		return board, nil, nil, fmt.Errorf("board %s not found", name)
+		return board, nil, nil, ErrBoardNotFound
 	}
 
 	t.l.Debug().Str("board", name).Msg("Getting lists for board")
