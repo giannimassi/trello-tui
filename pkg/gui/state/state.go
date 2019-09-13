@@ -130,52 +130,23 @@ func (s *State) NavPosition() NavigationPosition {
 	return s.Nav
 }
 
-type NavigationPosition struct {
-	SelectedBoard     string
-	SelectedListIndex int
-	SelectedCardID    int
-	SelectedCardState CardState
-}
-
-func (n *NavigationPosition) IsListSelected(idx int) bool {
-	return n.SelectedListIndex == idx
-}
-
-func (n *NavigationPosition) IsCardSelected(id int) bool {
-	return n.SelectedCardID == id
+func (s *State) InitNavigation() {
+	if s.Nav.isInitialized() {
+		return
+	}
+	s.Nav.selectFirstCardAvailable(s)
 }
 
 // Commands
 
 func (s *State) KeyPressed(k gocui.Key, m gocui.Modifier) {
 	switch k {
-	case gocui.KeyArrowLeft:
-		s.moveInBoard(-1)
-	case gocui.KeyArrowRight:
-		s.moveInBoard(1)
-	case gocui.KeyArrowUp:
-		s.moveInList(-1)
-	case gocui.KeyArrowDown:
-		s.moveInList(1)
+	case gocui.KeyArrowLeft, gocui.KeyArrowRight, gocui.KeyArrowUp, gocui.KeyArrowDown:
+		s.Nav.update(s, k)
 	case gocui.KeyEnter:
 		log.Warn().Msg("Enter not implemented")
 	case gocui.KeyEsc:
 		log.Warn().Msg("Esc not implemented")
-	}
-}
-
-func (s *State) moveInBoard(offset int) {
-	s.Nav.SelectedListIndex = (s.ListsLen() + s.Nav.SelectedListIndex + offset) % s.ListsLen()
-	s.Nav.SelectedCardID = s.ListCardsIds(s.Nav.SelectedListIndex)[0]
-}
-
-func (s *State) moveInList(offset int) {
-	var cardIDS = s.ListCardsIds(s.Nav.SelectedListIndex)
-	for i, v := range cardIDS {
-		if v == s.Nav.SelectedCardID {
-			s.Nav.SelectedCardID = cardIDS[(len(cardIDS)+i+offset)%len(cardIDS)]
-			break
-		}
 	}
 }
 

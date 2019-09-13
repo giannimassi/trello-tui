@@ -107,6 +107,7 @@ func (a *App) updateState() error {
 	s.Lists = lists
 	s.Cards = cards
 	s.SetBoardState(state.BoardLoaded)
+	s.InitNavigation()
 
 	// write to store also (will block state reads)
 	err = a.store.Write(s)
