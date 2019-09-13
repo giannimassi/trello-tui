@@ -65,12 +65,6 @@ func (a *App) Init() error {
 		return err
 	}
 
-	// Init gui
-	if err := a.gui.Init(a.store.State); err != nil {
-		a.l.Error().Err(err).Msg("Unexpected error while initializing gui")
-		return err
-	}
-
 	s := a.store.State()
 	if s.Nav.SelectedBoard == "" && a.cfg.SelectBoard == "" {
 		err := errors.New("no board name provided")
@@ -86,6 +80,11 @@ func (a *App) Init() error {
 			a.l.Error().Err(err).Msg("Unexpected error while overwriting state gui")
 		}
 	}
+
+	// Init gui
+	if err := a.gui.Init(a.store.State); err != nil {
+		a.l.Error().Err(err).Msg("Unexpected error while initializing gui")
+		return err
 	}
 
 	return nil
