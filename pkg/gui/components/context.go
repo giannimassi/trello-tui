@@ -13,7 +13,6 @@ type View interface {
 	ListNameByIndex(idx int) (string, bool)
 	ListCardsIds(idx int) []int
 	CardNameByID(idx int) (string, bool)
-	NavPosition() state.NavigationPosition
 	IsBoardLoaded() bool
 	IsBoardLoading() bool
 	IsBoardNotFound() bool
@@ -24,15 +23,22 @@ type Commands interface {
 	KeyPressed(k gocui.Key, m gocui.Modifier)
 }
 
+type Navigation interface {
+	IsListSelected(idx int) bool
+	IsCardSelected(id int) bool
+}
+
 type Context struct {
 	View
 	Commands
+	Navigation
 }
 
 func NewGuiContext(s *state.State) *Context {
 	return &Context{
-		View:     s,
-		Commands: s,
+		View:       s,
+		Commands:   s,
+		Navigation: s.Nav,
 	}
 }
 
@@ -64,7 +70,7 @@ func (v *Context) HeaderSubtitle() string {
 		}
 
 		return "  Could not find board \"" +
-			v.NavPosition().SelectedBoard +
+			v.Name() +
 			"\" (" + errStr + "). Press ctrl + c to exit application."
 	}
 

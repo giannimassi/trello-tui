@@ -35,14 +35,14 @@ type State struct {
 	Cards []trello.Card
 
 	errors     []error
-	Nav        NavigationPosition
+	Nav        *NavigationPosition
 	BoardState BoardState
 }
 
 func NewState() *State {
 	return &State{
 		Updated: time.Now(),
-		Nav: NavigationPosition{
+		Nav: &NavigationPosition{
 			SelectedCardID: -1,
 		},
 	}
@@ -124,10 +124,6 @@ func (s *State) IsBoardLoaded() bool {
 
 func (s *State) IsBoardNotFound() bool {
 	return s.BoardState == BoardNotFound
-}
-
-func (s *State) NavPosition() NavigationPosition {
-	return s.Nav
 }
 
 func (s *State) InitNavigation() {
