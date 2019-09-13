@@ -12,10 +12,20 @@ type NavigationPosition struct {
 	SelectedCardState CardState
 }
 
+// View
+func (n *NavigationPosition) IsListSelected(idx int) bool {
+	return n.SelectedListIndex == idx
+}
+
+func (n *NavigationPosition) IsCardSelected(id int) bool {
+	return n.SelectedCardID == id
+}
+
 func (n *NavigationPosition) isInitialized() bool {
 	return n.SelectedListIndex != -1 && n.SelectedCardID != -1
 }
 
+// Commands
 func (n *NavigationPosition) selectFirstCardAvailable(s *State) {
 	if len(s.Lists) != 0 {
 		for i := 0; i < len(s.Lists); i++ {
@@ -27,14 +37,6 @@ func (n *NavigationPosition) selectFirstCardAvailable(s *State) {
 			}
 		}
 	}
-}
-
-func (n *NavigationPosition) IsListSelected(idx int) bool {
-	return n.SelectedListIndex == idx
-}
-
-func (n *NavigationPosition) IsCardSelected(id int) bool {
-	return n.SelectedCardID == id
 }
 
 func (n *NavigationPosition) update(s *State, k gocui.Key) {

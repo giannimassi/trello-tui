@@ -134,7 +134,6 @@ func (s *State) InitNavigation() {
 }
 
 // Commands
-
 func (s *State) KeyPressed(k gocui.Key, m gocui.Modifier) {
 	switch k {
 	case gocui.KeyArrowLeft, gocui.KeyArrowRight, gocui.KeyArrowUp, gocui.KeyArrowDown:
