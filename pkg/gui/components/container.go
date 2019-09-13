@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	headerHeight = 0.05
+	headerHeight = 0.1
 )
 
 type Container struct {
