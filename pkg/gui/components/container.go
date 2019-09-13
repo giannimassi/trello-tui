@@ -53,8 +53,9 @@ func (c *Container) updateLists(g *gocui.Gui, ctx *Context) {
 		y0           = headerHeight + interMargin/2
 	)
 
+	ctx.UpdateFirstListIndex(listsPerPage, listsLen)
 	for i := 0; i < listsLen || i < len(c.lists); i++ {
-		x0 = float64(i) / float64(listsPerPage)
+		x0 = float64(i-ctx.FirstListIndex()) / float64(listsPerPage)
 		switch {
 		case i >= len(c.lists):
 			// Add list
@@ -70,7 +71,12 @@ func (c *Container) updateLists(g *gocui.Gui, ctx *Context) {
 		// Resize list
 		c.lists[i].Panel.Move(x0, y0)
 		c.lists[i].Panel.Resize(w, h)
-		c.lists[i].visible = x0 < 1
+
+		if x0 >= 0 && x0 < 1 {
+			c.lists[i].visible = true
+		} else {
+			c.lists[i].visible = false
+		}
 	}
 
 	c.lists = c.lists[:listsLen]

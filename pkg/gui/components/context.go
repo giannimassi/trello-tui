@@ -26,6 +26,8 @@ type Commands interface {
 type Navigation interface {
 	IsListSelected(idx int) bool
 	IsCardSelected(id int) bool
+	UpdateFirstListIndex(listsPerPage, totalLists int)
+	FirstListIndex() int
 }
 
 type Context struct {

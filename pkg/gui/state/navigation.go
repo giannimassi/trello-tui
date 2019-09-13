@@ -10,6 +10,7 @@ type NavigationPosition struct {
 	SelectedListIndex int
 	SelectedCardID    int
 	SelectedCardState CardState
+	FirstListIdx      int
 }
 
 // View
@@ -82,6 +83,34 @@ func (n *NavigationPosition) update(s *State, k gocui.Key) {
 		}
 	}
 	log.Warn().Interface("nav", n).Uint16("k", uint16(k)).Msg("Navigation updated")
+}
+
+func (n *NavigationPosition) FirstListIndex() int {
+	return n.FirstListIdx
+}
+
+func (n *NavigationPosition) UpdateFirstListIndex(listsPerPage, totalLists int) {
+	min := minListIndex(n.SelectedListIndex, listsPerPage)
+	max := maxListIndex(n.SelectedListIndex, listsPerPage, totalLists)
+	if n.FirstListIdx < min {
+		n.FirstListIdx = min
+	} else if n.FirstListIdx > max {
+		n.FirstListIdx = max
+	}
+}
+
+func minListIndex(selected, perPage int) int {
+	if selected-perPage+1 > 0 {
+		return selected - perPage + 1
+	}
+	return 0
+}
+
+func maxListIndex(selected, perPage, total int) int {
+	if selected+perPage-1 < total {
+		return selected
+	}
+	return total - perPage
 }
 
 func cardIndexInListFromID(cardIds []int, id int) int {
