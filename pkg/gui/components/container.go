@@ -9,7 +9,6 @@ import (
 
 const (
 	headerHeight = 0.1
-	interMargin  = 0.01
 )
 
 type Container struct {
@@ -21,7 +20,7 @@ type Container struct {
 func NewContainer(pp panel.Parent) Container {
 	return Container{
 		pp:     pp,
-		header: NewHeader(pp, 0, 0, 0.8, headerHeight-interMargin/2),
+		header: NewHeader(pp, 0, 0, 0.8, headerHeight),
 	}
 }
 
@@ -48,9 +47,9 @@ func (c *Container) updateLists(g *gocui.Gui, ctx *Context) {
 		maxW, _      = g.Size()
 		listsPerPage = listWidths.Match(maxW)
 		w            = 1 / float64(listsPerPage)
-		h            = 1 - headerHeight - interMargin/2
+		h            = 1 - headerHeight
 		x0           float64
-		y0           = headerHeight + interMargin/2
+		y0           = headerHeight
 	)
 
 	ctx.UpdateFirstListIndex(listsPerPage, listsLen)
