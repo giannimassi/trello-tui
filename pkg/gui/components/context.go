@@ -13,8 +13,9 @@ type View interface {
 	ListNameByIndex(idx int) (string, bool)
 	ListCardsIds(idx int) []int
 	CardNameByID(idx int) (string, bool)
-	NavPosition() state.NavigationPosition
-	Loading() bool
+	IsBoardLoaded() bool
+	IsBoardLoading() bool
+	IsBoardNotFound() bool
 	Errors() []error
 }
 
@@ -22,15 +23,22 @@ type Commands interface {
 	KeyPressed(k gocui.Key, m gocui.Modifier)
 }
 
+type Navigation interface {
+	IsListSelected(idx int) bool
+	IsCardSelected(id int) bool
+}
+
 type Context struct {
 	View
 	Commands
+	Navigation
 }
 
 func NewGuiContext(s *state.State) *Context {
 	return &Context{
-		View:     s,
-		Commands: s,
+		View:       s,
+		Commands:   s,
+		Navigation: s.Nav,
 	}
 }
 
@@ -44,17 +52,37 @@ func (v *Context) HasDescription() bool {
 }
 
 func (v *Context) HeaderTitle() string {
-	if v.Loading() {
+	if v.IsBoardNotFound() {
+		return " Board not found "
+	}
+
+	if !v.IsBoardLoaded() {
 		return " Loading " + v.Name() + "... "
 	}
 	return " Board: " + v.Name() + " "
 }
 
 func (v *Context) HeaderSubtitle() string {
-	if v.Loading() {
+	if v.IsBoardNotFound() {
+		var errStr string
+		if errs := v.Errors(); len(errs) != 0 {
+			errStr = errs[len(errs)-1].Error()
+		}
+
+		return "  Could not find board \"" +
+			v.Name() +
+			"\" (" + errStr + "). Press ctrl + c to exit application."
+	}
+
+	if v.IsBoardLoading() {
+		return "  Description loading..."
+	}
+
+	if !v.HasDescription() || !v.IsBoardLoaded() {
 		return ""
 	}
-	return " Description: " + v.Description() + " "
+
+	return "  " + v.Description()
 }
 
 func (v *Context) ListTitle(idx int) string {

@@ -22,20 +22,19 @@ func (l *List) Draw(g *gocui.Gui, ctx *Context) error {
 	if err := l.Panel.Layout(g); err != nil {
 		return errors.Wrapf(err, "list layout failure")
 	}
-	var nav = ctx.NavPosition()
 
 	l.Title = ctx.ListTitle(l.idx)
 	l.Autoscroll = true
 	l.SelBgColor = gocui.ColorGreen
 
-	if nav.IsListSelected(l.idx) {
+	if ctx.IsListSelected(l.idx) {
 		l.View, _ = g.SetCurrentView(l.Name())
 	}
 	w, _ := l.Size()
 	l.Panel.Clear()
 	_, _ = l.Panel.Write([]byte("\n\n" + strings.Repeat("-", w-1)))
 	for _, id := range ctx.ListCardsIds(l.idx) {
-		_, _ = ctx.Color(CardTitleClass, nav.IsCardSelected(id)).Fprint(l.Panel, ctx.CardTitle(id))
+		_, _ = ctx.Color(CardTitleClass, ctx.IsCardSelected(id)).Fprint(l.Panel, ctx.CardTitle(id))
 		_, _ = l.Panel.Write([]byte("\n\n" + strings.Repeat("-", w-1)))
 	}
 	return nil

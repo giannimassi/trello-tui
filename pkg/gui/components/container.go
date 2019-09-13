@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	headerHeight = 0.05
+	headerHeight = 0.1
 )
 
 type Container struct {
@@ -27,10 +27,6 @@ func NewContainer(pp panel.Parent) Container {
 func (c *Container) Draw(g *gocui.Gui, ctx *Context) error {
 	if err := c.header.Draw(g, ctx); err != nil {
 		return errors.Wrapf(err, "while drawing header")
-	}
-
-	if ctx.Loading() {
-		return nil
 	}
 
 	if len(c.lists) != ctx.ListsLen() {
