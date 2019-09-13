@@ -118,7 +118,13 @@ func (a *App) updateState() error {
 }
 
 func (a *App) updateStateLoop(ctx context.Context) {
-	var timer = time.NewTimer(0)
+	var timer *time.Timer
+	if tSinceLastUpdate := time.Since(a.store.State().Updated); tSinceLastUpdate < a.cfg.RefreshInterval && a.store.State().IsBoardLoaded() {
+		timer = time.NewTimer(a.cfg.RefreshInterval - tSinceLastUpdate)
+	} else {
+		timer = time.NewTimer(0)
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -128,8 +134,10 @@ func (a *App) updateStateLoop(ctx context.Context) {
 			return
 		case now := <-timer.C:
 			if err := a.updateState(); err != nil {
-				a.l.Error().Err(err).Msg("Unexpected error while updating state")
-				continue
+				a.l.Error().Str("board", a.cfg.SelectBoard).Err(err).Msg("Unexpected error while updating state")
+				a.gui.Sync()
+				// try again in 1s instead of waiting refreshInterval
+				timer.Reset(time.Second)
 			}
 			a.l.Info().Dur("d", time.Since(now)).Msg("State updated")
 			a.gui.Sync()
