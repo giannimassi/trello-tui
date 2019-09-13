@@ -148,17 +148,17 @@ func (a *App) updateStateLoop(ctx context.Context) {
 
 func (a *App) Run() error {
 	ctx, cancelUpdate := context.WithCancel(context.Background())
-	go a.updateStateLoop(ctx)
 	a.cancelUpdate = cancelUpdate
+	go a.updateStateLoop(ctx)
 	return a.gui.Run()
 }
 
 func (a *App) Close() {
 	a.l.Debug().Msg("Closing application")
+	a.gui.Close()
 	// Save everything
 	if err := a.store.Write(a.store.State()); err != nil {
 		a.l.Warn().Err(err).Msg("Unexpected error while saving state on shutdown")
 	}
 	a.cancelUpdate()
-	a.gui.Close()
 }
