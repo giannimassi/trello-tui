@@ -29,10 +29,7 @@ func (c *Container) Draw(g *gocui.Gui, ctx *Context) error {
 	if err := c.header.Draw(g, ctx); err != nil {
 		return errors.Wrapf(err, "while drawing header")
 	}
-
-	if len(c.lists) != ctx.ListsLen() {
-		c.updateLists(g, ctx)
-	}
+	c.updateLists(g, ctx)
 
 	for i := range c.lists {
 		c.lists[i].Panel.Reflow()
