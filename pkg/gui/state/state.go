@@ -9,10 +9,22 @@ import (
 )
 
 type CardState int
+type BoardState int
 
 const (
-	_ = iota
-	CardHighlighted
+
+	// BoardState
+	BoardUninitialized = iota
+	BoardLoading
+	BoardNotFound
+	BoardLoaded
+
+	// CardState
+	CardUninitialized = iota
+	CardLoading
+	CardNotFound
+	CardLoaded
+	CardSelected
 )
 
 type State struct {
@@ -24,7 +36,7 @@ type State struct {
 
 	ErrorList []error
 	Nav       NavigationPosition
-	loading   bool
+	BoardState BoardState
 }
 
 func NewState() *State {
@@ -37,19 +49,32 @@ func NewState() *State {
 }
 
 func (s *State) Name() string {
-	return s.Board.Name
+	switch s.BoardState {
+	case BoardLoaded:
+		return s.Board.Name
+	case BoardLoading:
+		return s.Nav.SelectedBoard
+	default:
+		return ""
+	}
 }
 
 func (s *State) Description() string {
+	if s.BoardState != BoardLoaded {
+		return ""
+	}
 	return s.Board.Desc
 }
 
 func (s *State) ListsLen() int {
+	if s.BoardState != BoardLoaded {
+		return 0
+	}
 	return len(s.Lists)
 }
 
 func (s *State) ListNameByIndex(idx int) (string, bool) {
-	if idx >= len(s.Lists) {
+	if idx >= len(s.Lists) || s.BoardState != BoardLoaded {
 		return "", false
 	}
 
@@ -58,7 +83,7 @@ func (s *State) ListNameByIndex(idx int) (string, bool) {
 
 func (s *State) ListCardsIds(idx int) []int {
 	var ids []int
-	if idx >= len(s.Lists) {
+	if idx >= len(s.Lists) || s.BoardState != BoardLoaded {
 		return ids
 	}
 
@@ -72,6 +97,10 @@ func (s *State) ListCardsIds(idx int) []int {
 }
 
 func (s *State) CardNameByID(cardID int) (string, bool) {
+	if s.BoardState != BoardLoaded {
+		return "", false
+	}
+
 	for _, c := range s.Cards {
 		if c.IdShort == cardID {
 			return c.Name, true
@@ -85,8 +114,16 @@ func (s *State) Errors() []error {
 	return s.ErrorList
 }
 
-func (s *State) Loading() bool {
-	return s.loading
+func (s *State) IsBoardLoading() bool {
+	return s.BoardState == BoardLoading
+}
+
+func (s *State) IsBoardLoaded() bool {
+	return s.BoardState == BoardLoaded
+}
+
+func (s *State) IsBoardNotFound() bool {
+	return s.BoardState == BoardNotFound
 }
 
 func (s *State) NavPosition() NavigationPosition {
@@ -146,6 +183,34 @@ func (s *State) AppendErr(err error) {
 	s.ErrorList = append(s.ErrorList, err)
 }
 
-func (s *State) SetLoading(loading bool) {
-	s.loading = loading
+func (s *State) SetBoardState(boardState BoardState) {
+	prevState := s.BoardState
+	s.Updated = time.Now()
+	switch boardState {
+	case BoardUninitialized:
+		s.Board = trello.Board{}
+		s.Lists = []trello.List{}
+		s.Cards = []trello.Card{}
+		s.Nav.SelectedListIndex = -1
+		s.Nav.SelectedCardID = -1
+		s.Nav.SelectedCardState = CardUninitialized
+	case BoardLoading:
+		s.Board = trello.Board{}
+		s.Lists = []trello.List{}
+		s.Cards = []trello.Card{}
+		s.Nav.SelectedListIndex = -1
+		s.Nav.SelectedCardID = -1
+		s.Nav.SelectedCardState = CardLoading
+	case BoardNotFound:
+		s.Board = trello.Board{}
+		s.Lists = []trello.List{}
+		s.Cards = []trello.Card{}
+		s.Nav.SelectedListIndex = -1
+		s.Nav.SelectedCardID = -1
+		s.Nav.SelectedCardState = CardNotFound
+	case BoardLoaded:
+		s.Nav.SelectedCardState = CardLoaded
+	}
+	s.BoardState = boardState
+	log.Debug().Int("old", int(prevState)).Int("new", int(s.BoardState)).Msg("board state changed")
 }

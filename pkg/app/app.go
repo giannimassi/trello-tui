@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"github.com/giannimassi/trello-tui/pkg/gui"
+	"github.com/giannimassi/trello-tui/pkg/gui/state"
 	"github.com/giannimassi/trello-tui/pkg/store"
 	"github.com/giannimassi/trello-tui/pkg/trello"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 type Config struct {
@@ -77,8 +79,13 @@ func (a *App) Init() error {
 	}
 
 	if s.Nav.SelectedBoard != a.cfg.SelectBoard {
+		log.Debug().Str("cached", s.Nav.SelectedBoard).Str("new", a.cfg.SelectBoard).Msg("Board provided different from cached. Loading board.")
 		s.Nav.SelectedBoard = a.cfg.SelectBoard
-		s.SetLoading(true)
+		s.SetBoardState(state.BoardLoading)
+		if err := a.store.Write(s); err != nil {
+			a.l.Error().Err(err).Msg("Unexpected error while overwriting state gui")
+		}
+	}
 	}
 
 	return nil
@@ -91,14 +98,15 @@ func (a *App) updateState() error {
 	board, lists, cards, err := a.client.BoardInfo(s.Nav.SelectedBoard)
 	if err != nil {
 		s.AppendErr(err)
-		return nil
+		s.SetBoardState(state.BoardNotFound)
+		return err
 	}
 
 	s.Updated = time.Now()
 	s.Board = board
 	s.Lists = lists
 	s.Cards = cards
-	s.SetLoading(false)
+	s.SetBoardState(state.BoardLoaded)
 
 	// write to store also (will block state reads)
 	err = a.store.Write(s)

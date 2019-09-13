@@ -14,7 +14,9 @@ type View interface {
 	ListCardsIds(idx int) []int
 	CardNameByID(idx int) (string, bool)
 	NavPosition() state.NavigationPosition
-	Loading() bool
+	IsBoardLoaded() bool
+	IsBoardLoading() bool
+	IsBoardNotFound() bool
 	Errors() []error
 }
 
@@ -44,17 +46,30 @@ func (v *Context) HasDescription() bool {
 }
 
 func (v *Context) HeaderTitle() string {
-	if v.Loading() {
+	if v.IsBoardNotFound() {
+		return " Board not found "
+	}
+
+	if !v.IsBoardLoaded() {
 		return " Loading " + v.Name() + "... "
 	}
 	return " Board: " + v.Name() + " "
 }
 
 func (v *Context) HeaderSubtitle() string {
-	if v.Loading() {
+	if v.IsBoardNotFound() {
+		return "  Could not find board \"" + v.NavPosition().SelectedBoard + "\""
+	}
+
+	if v.IsBoardLoading() {
+		return "  Description loading..."
+	}
+
+	if !v.HasDescription() || !v.IsBoardLoaded() {
 		return ""
 	}
-	return " Description: " + v.Description() + " "
+
+	return "  " + v.Description()
 }
 
 func (v *Context) ListTitle(idx int) string {

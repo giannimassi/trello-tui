@@ -29,10 +29,6 @@ func (c *Container) Draw(g *gocui.Gui, ctx *Context) error {
 		return errors.Wrapf(err, "while drawing header")
 	}
 
-	if ctx.Loading() {
-		return nil
-	}
-
 	if len(c.lists) != ctx.ListsLen() {
 		c.updateLists(g, ctx)
 	}
