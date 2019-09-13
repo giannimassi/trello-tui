@@ -62,10 +62,12 @@ func RelativePanel(name string, x0, y0, w, h float64) *Panel {
 	return p
 }
 
-func (p *Panel) Layout(g *gocui.Gui) error {
+func (p *Panel) Reflow() {
 	p.position.Apply(&p.x0, &p.y0, &p.x1, &p.y1)
 	p.size.Apply(&p.x0, &p.y0, &p.x1, &p.y1)
+}
 
+func (p *Panel) Layout(g *gocui.Gui) error {
 	v, err := g.SetView(p.name, p.x0, p.y0, p.x1, p.y1)
 	if err != nil && err.Error() != gocui.ErrUnknownView.Error() {
 		return err

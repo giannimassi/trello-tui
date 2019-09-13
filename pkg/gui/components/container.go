@@ -25,6 +25,7 @@ func NewContainer(pp panel.Parent) Container {
 }
 
 func (c *Container) Draw(g *gocui.Gui, ctx *Context) error {
+	c.header.Panel.Reflow()
 	if err := c.header.Draw(g, ctx); err != nil {
 		return errors.Wrapf(err, "while drawing header")
 	}
@@ -34,6 +35,7 @@ func (c *Container) Draw(g *gocui.Gui, ctx *Context) error {
 	}
 
 	for i := range c.lists {
+		c.lists[i].Panel.Reflow()
 		if err := c.lists[i].Draw(g, ctx); err != nil {
 			return errors.Wrapf(err, "while drawing list %d", i)
 		}
