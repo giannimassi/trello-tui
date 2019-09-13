@@ -12,10 +12,11 @@ import (
 type List struct {
 	idx int
 	*panel.Panel
+	visible bool
 }
 
 func NewList(idx int, x0, y0, w, h float64) List {
-	return List{idx, panel.RelativePanel(fmt.Sprintf("list-%02d", idx), x0, y0, w, h)} //WithChildren(
+	return List{idx, panel.RelativePanel(fmt.Sprintf("list-%02d", idx), x0, y0, w, h), false} //WithChildren(
 }
 
 func (l *List) Draw(g *gocui.Gui, ctx *Context) error {
@@ -32,6 +33,9 @@ func (l *List) Draw(g *gocui.Gui, ctx *Context) error {
 	}
 	w, _ := l.Size()
 	l.Panel.Clear()
+	if !l.visible {
+		return nil
+	}
 	_, _ = l.Panel.Write([]byte("\n\n" + strings.Repeat("-", w-1)))
 	for _, id := range ctx.ListCardsIds(l.idx) {
 		_, _ = ctx.Color(CardTitleClass, ctx.IsCardSelected(id)).Fprint(l.Panel, ctx.CardTitle(id))
