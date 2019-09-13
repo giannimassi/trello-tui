@@ -20,11 +20,9 @@ func (h *Header) Draw(g *gocui.Gui, ctx *Context) error {
 	}
 	h.Panel.View.Title = ctx.HeaderTitle()
 	h.Panel.Clear()
-
-	if ctx.HasDescription() {
-		if _, err := ctx.Color(BoardDescriptionClass, false).Fprint(h.Panel, ctx.Description()); err != nil {
-			return err
-		}
+	_, _ = h.Panel.Write([]byte("\n"))
+	if _, err := ctx.Color(BoardDescriptionClass, false).Fprint(h.Panel, ctx.HeaderSubtitle()); err != nil {
+		return err
 	}
 
 	// Other info about board could go here (members, notifications maybe?)
