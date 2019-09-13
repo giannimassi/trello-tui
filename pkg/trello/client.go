@@ -66,7 +66,7 @@ func (t *Client) BoardInfo(name string) (trello.Board, []trello.List, []trello.C
 		return board, nil, nil, ErrBoardNotFound
 	}
 
-	t.l.Debug().Str("board", name).Msg("Getting lists for board")
+	t.l.Debug().Interface("board", board.Name).Msg("Getting lists for board")
 	lists, err := board.Lists()
 	if err != nil {
 		return board, nil, nil, errors.Wrapf(err, "while getting list for board %s", board.Name)
