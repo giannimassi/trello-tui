@@ -58,7 +58,14 @@ func (v *Context) HeaderTitle() string {
 
 func (v *Context) HeaderSubtitle() string {
 	if v.IsBoardNotFound() {
-		return "  Could not find board \"" + v.NavPosition().SelectedBoard + "\""
+		var errStr string
+		if errs := v.Errors(); len(errs) != 0 {
+			errStr = errs[len(errs)-1].Error()
+		}
+
+		return "  Could not find board \"" +
+			v.NavPosition().SelectedBoard +
+			"\" (" + errStr + "). Press ctrl + c to exit application."
 	}
 
 	if v.IsBoardLoading() {
