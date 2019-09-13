@@ -9,6 +9,7 @@ import (
 
 const (
 	headerHeight = 0.1
+	interMargin  = 0.01
 )
 
 type Container struct {
@@ -20,7 +21,7 @@ type Container struct {
 func NewContainer(pp panel.Parent) Container {
 	return Container{
 		pp:     pp,
-		header: NewHeader(pp, 0, 0, 1, headerHeight),
+		header: NewHeader(pp, 0, 0, 0.8, headerHeight-interMargin/2),
 	}
 }
 
