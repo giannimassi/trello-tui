@@ -130,6 +130,7 @@ func (s *State) InitNavigation() {
 	if s.NavigationPosition.isInitialized() {
 		return
 	}
+	s.NavigationPosition.FirstCardIdxs = make([]int, len(s.Lists))
 	s.NavigationPosition.selectFirstCardAvailable(s)
 }
 

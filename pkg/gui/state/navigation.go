@@ -11,6 +11,7 @@ type NavigationPosition struct {
 	SelectedCardID    int
 	SelectedCardState CardState
 	FirstListIdx      int
+	FirstCardIdxs     []int
 }
 
 // View
@@ -82,16 +83,19 @@ func (n *NavigationPosition) update(s *State, k gocui.Key) {
 			n.SelectedCardID = cardIDs[i+1]
 		}
 	}
-	log.Warn().Interface("nav", n).Uint16("k", uint16(k)).Msg("Navigation updated")
 }
 
 func (n *NavigationPosition) FirstListIndex() int {
 	return n.FirstListIdx
 }
 
+func (n *NavigationPosition) FirstCardIndex(idx int) int {
+	return n.FirstCardIdxs[idx]
+}
+
 func (n *NavigationPosition) UpdateFirstListIndex(listsPerPage, totalLists int) {
-	min := minListIndex(n.SelectedListIndex, listsPerPage)
-	max := maxListIndex(n.SelectedListIndex, listsPerPage, totalLists)
+	min := minIndex(n.SelectedListIndex, listsPerPage)
+	max := maxIndex(n.SelectedListIndex, listsPerPage, totalLists)
 	if n.FirstListIdx < min {
 		n.FirstListIdx = min
 	} else if n.FirstListIdx > max {
@@ -99,16 +103,30 @@ func (n *NavigationPosition) UpdateFirstListIndex(listsPerPage, totalLists int) 
 	}
 }
 
-func minListIndex(selected, perPage int) int {
+func (n *NavigationPosition) UpdateFirstCardIndex(cardsPerPage int, cardIDs []int) {
+	currentIdx := n.FirstCardIdxs[n.SelectedListIndex]
+	min := minIndex(cardIndexInListFromID(cardIDs, n.SelectedCardID), cardsPerPage)
+	max := maxIndex(cardIndexInListFromID(cardIDs, n.SelectedCardID), cardsPerPage, len(cardIDs))
+	if currentIdx < min {
+		n.FirstCardIdxs[n.SelectedListIndex] = min
+	} else if currentIdx > max {
+		n.FirstCardIdxs[n.SelectedListIndex] = max
+	}
+}
+
+func minIndex(selected, perPage int) int {
 	if selected-perPage+1 > 0 {
 		return selected - perPage + 1
 	}
 	return 0
 }
 
-func maxListIndex(selected, perPage, total int) int {
+func maxIndex(selected, perPage, total int) int {
 	if selected+perPage-1 < total {
 		return selected
+	}
+	if total-perPage < 0 {
+		return 0
 	}
 	return total - perPage
 }
