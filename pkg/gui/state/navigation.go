@@ -32,8 +32,8 @@ func (n *NavigationPosition) selectFirstCardAvailable(s *State) {
 		for i := 0; i < len(s.Lists); i++ {
 			cardIDs := s.ListCardsIds(i)
 			if len(cardIDs) != 0 {
-				s.Nav.SelectedListIndex = i
-				s.Nav.SelectedCardID = cardIDs[0]
+				s.NavigationPosition.SelectedListIndex = i
+				s.NavigationPosition.SelectedCardID = cardIDs[0]
 				break
 			}
 		}

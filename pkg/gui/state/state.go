@@ -34,15 +34,15 @@ type State struct {
 	Lists []trello.List
 	Cards []trello.Card
 
-	errors     []error
-	Nav        *NavigationPosition
+	errors []error
+	NavigationPosition
 	BoardState BoardState
 }
 
 func NewState() *State {
 	return &State{
 		Updated: time.Now(),
-		Nav: &NavigationPosition{
+		NavigationPosition: NavigationPosition{
 			SelectedCardID: -1,
 		},
 	}
@@ -53,7 +53,7 @@ func (s *State) Name() string {
 	case BoardLoaded:
 		return s.Board.Name
 	case BoardLoading:
-		return s.Nav.SelectedBoard
+		return s.NavigationPosition.SelectedBoard
 	default:
 		return ""
 	}
@@ -127,17 +127,17 @@ func (s *State) IsBoardNotFound() bool {
 }
 
 func (s *State) InitNavigation() {
-	if s.Nav.isInitialized() {
+	if s.NavigationPosition.isInitialized() {
 		return
 	}
-	s.Nav.selectFirstCardAvailable(s)
+	s.NavigationPosition.selectFirstCardAvailable(s)
 }
 
 // Commands
 func (s *State) KeyPressed(k gocui.Key, m gocui.Modifier) {
 	switch k {
 	case gocui.KeyArrowLeft, gocui.KeyArrowRight, gocui.KeyArrowUp, gocui.KeyArrowDown:
-		s.Nav.update(s, k)
+		s.NavigationPosition.update(s, k)
 	case gocui.KeyEnter:
 		log.Warn().Msg("Enter not implemented")
 	case gocui.KeyEsc:
@@ -157,25 +157,25 @@ func (s *State) SetBoardState(boardState BoardState) {
 		s.Board = trello.Board{}
 		s.Lists = []trello.List{}
 		s.Cards = []trello.Card{}
-		s.Nav.SelectedListIndex = -1
-		s.Nav.SelectedCardID = -1
-		s.Nav.SelectedCardState = CardUninitialized
+		s.NavigationPosition.SelectedListIndex = -1
+		s.NavigationPosition.SelectedCardID = -1
+		s.NavigationPosition.SelectedCardState = CardUninitialized
 	case BoardLoading:
 		s.Board = trello.Board{}
 		s.Lists = []trello.List{}
 		s.Cards = []trello.Card{}
-		s.Nav.SelectedListIndex = -1
-		s.Nav.SelectedCardID = -1
-		s.Nav.SelectedCardState = CardLoading
+		s.NavigationPosition.SelectedListIndex = -1
+		s.NavigationPosition.SelectedCardID = -1
+		s.NavigationPosition.SelectedCardState = CardLoading
 	case BoardNotFound:
 		s.Board = trello.Board{}
 		s.Lists = []trello.List{}
 		s.Cards = []trello.Card{}
-		s.Nav.SelectedListIndex = -1
-		s.Nav.SelectedCardID = -1
-		s.Nav.SelectedCardState = CardNotFound
+		s.NavigationPosition.SelectedListIndex = -1
+		s.NavigationPosition.SelectedCardID = -1
+		s.NavigationPosition.SelectedCardState = CardNotFound
 	case BoardLoaded:
-		s.Nav.SelectedCardState = CardLoaded
+		s.NavigationPosition.SelectedCardState = CardLoaded
 	}
 	s.BoardState = boardState
 	log.Debug().Int("old", int(prevState)).Int("new", int(s.BoardState)).Msg("board state changed")

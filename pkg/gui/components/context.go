@@ -40,13 +40,14 @@ func NewGuiContext(s *state.State) *Context {
 	return &Context{
 		View:       s,
 		Commands:   s,
-		Navigation: s.Nav,
+		Navigation: s,
 	}
 }
 
 func (v *Context) Set(s *state.State) {
 	v.View = s
 	v.Commands = s
+	v.Navigation = s
 }
 
 func (v *Context) HasDescription() bool {

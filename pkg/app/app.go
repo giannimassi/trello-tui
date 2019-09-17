@@ -66,15 +66,15 @@ func (a *App) Init() error {
 	}
 
 	s := a.store.State()
-	if s.Nav.SelectedBoard == "" && a.cfg.SelectBoard == "" {
+	if s.NavigationPosition.SelectedBoard == "" && a.cfg.SelectBoard == "" {
 		err := errors.New("no board name provided")
 		a.l.Error().Err(err).Msg("Unexpected error while initializing gui")
 		return err
 	}
 
-	if s.Nav.SelectedBoard != a.cfg.SelectBoard {
-		log.Debug().Str("cached", s.Nav.SelectedBoard).Str("new", a.cfg.SelectBoard).Msg("Board provided different from cached. Loading board.")
-		s.Nav.SelectedBoard = a.cfg.SelectBoard
+	if s.NavigationPosition.SelectedBoard != a.cfg.SelectBoard {
+		log.Debug().Str("cached", s.NavigationPosition.SelectedBoard).Str("new", a.cfg.SelectBoard).Msg("Board provided different from cached. Loading board.")
+		s.NavigationPosition.SelectedBoard = a.cfg.SelectBoard
 		s.SetBoardState(state.BoardLoading)
 		if err := a.store.Write(s); err != nil {
 			a.l.Error().Err(err).Msg("Unexpected error while overwriting state gui")
@@ -94,7 +94,7 @@ func (a *App) Init() error {
 // if boardName
 func (a *App) updateState() error {
 	s := a.store.State()
-	board, lists, cards, err := a.client.BoardInfo(s.Nav.SelectedBoard)
+	board, lists, cards, err := a.client.BoardInfo(s.NavigationPosition.SelectedBoard)
 	if err != nil {
 		s.AppendErr(err)
 		s.SetBoardState(state.BoardNotFound)
