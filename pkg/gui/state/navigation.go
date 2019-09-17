@@ -11,7 +11,7 @@ type NavigationPosition struct {
 	SelectedCardID    int
 	SelectedCardState CardState
 	FirstListIdx      int
-	FirstCardIdxs     []int
+	FirstCardIdxs     []int // TODO[gianni] this should not be state, or it should be on a different layer of state (visualization depends on navigation, but can be implemented  independently in gui if not required to be persisted)
 }
 
 // View
