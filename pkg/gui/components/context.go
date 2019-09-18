@@ -97,8 +97,8 @@ func (v *Context) ListTitle(idx int) string {
 	return ""
 }
 
-func (v *Context) CardTitle(idx int) string {
-	if name, found := v.View.CardNameByID(idx); found {
+func (v *Context) CardTitle(id int) string {
+	if name, found := v.View.CardNameByID(id); found {
 		return name
 	}
 	return ""
