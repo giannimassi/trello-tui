@@ -82,6 +82,16 @@ func (n *NavigationPosition) update(s *State, k gocui.Key) {
 		if i := cardIndexInListFromID(cardIDs, n.SelectedCardID); i+1 < len(cardIDs) {
 			n.SelectedCardID = cardIDs[i+1]
 		}
+
+	case gocui.KeyEnter:
+		if s.SelectedCardState == CardLoaded {
+			s.SelectedCardState = CardSelected
+		}
+
+	case gocui.KeyEsc:
+		if s.SelectedCardState == CardSelected {
+			s.SelectedCardState = CardLoaded
+		}
 	}
 }
 

@@ -137,12 +137,8 @@ func (s *State) InitNavigation() {
 // Commands
 func (s *State) KeyPressed(k gocui.Key, m gocui.Modifier) {
 	switch k {
-	case gocui.KeyArrowLeft, gocui.KeyArrowRight, gocui.KeyArrowUp, gocui.KeyArrowDown:
+	case gocui.KeyArrowLeft, gocui.KeyArrowRight, gocui.KeyArrowUp, gocui.KeyArrowDown, gocui.KeyEnter, gocui.KeyEsc:
 		s.NavigationPosition.update(s, k)
-	case gocui.KeyEnter:
-		log.Warn().Msg("Enter not implemented")
-	case gocui.KeyEsc:
-		log.Warn().Msg("Esc not implemented")
 	}
 }
 
