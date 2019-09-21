@@ -3,9 +3,9 @@ package components
 import (
 	"github.com/fatih/color"
 	"github.com/giannimassi/trello-tui/pkg/gui/state"
-	"github.com/jroimartin/gocui"
 )
 
+// TODO: really bad smell here, why is this interface so huge, need to re-think this context thingy
 type View interface {
 	Name() string
 	Description() string
@@ -13,43 +13,45 @@ type View interface {
 	ListNameByIndex(idx int) (string, bool)
 	ListCardsIds(idx int) []int
 	CardNameByID(idx int) (string, bool)
+	Errors() []error
+
+	// Navigation
+	IsListSelected(idx int) bool
+	IsCardSelected(id int) bool
 	IsBoardLoaded() bool
 	IsBoardLoading() bool
 	IsBoardNotFound() bool
-	Errors() []error
+	IsCardPopupOpen() bool
+	FirstListIndex() int
+	FirstCardIndex(idx int) int
 }
 
 type Commands interface {
-	KeyPressed(k gocui.Key, m gocui.Modifier)
-}
-
-type Navigation interface {
-	IsListSelected(idx int) bool
-	IsCardSelected(id int) bool
-	FirstListIndex() int
-	FirstCardIndex(idx int) int
 	UpdateFirstListIndex(listsPerPage, totalLists int)
 	UpdateFirstCardIndex(cardsPerPage int, cardIDs []int)
+	MoveLeft()
+	MoveRight()
+	MoveUp()
+	MoveDown()
+	OpenCardPopup()
+	CloseCardPopup()
 }
 
 type Context struct {
 	View
 	Commands
-	Navigation
 }
 
 func NewGuiContext(s *state.State) *Context {
 	return &Context{
-		View:       s,
-		Commands:   s,
-		Navigation: s,
+		View:     s,
+		Commands: s,
 	}
 }
 
 func (v *Context) Set(s *state.State) {
 	v.View = s
 	v.Commands = s
-	v.Navigation = s
 }
 
 func (v *Context) HasDescription() bool {
