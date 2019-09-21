@@ -15,12 +15,14 @@ type Container struct {
 	pp     panel.Parent
 	header Header
 	lists  []List
+	card   CardPopup
 }
 
 func NewContainer(pp panel.Parent) Container {
 	return Container{
 		pp:     pp,
 		header: NewHeader(pp, 0, 0, 0.8, headerHeight),
+		card:   NewCardPopup(pp, 0.2, 0.1, 0.6, 0.8),
 	}
 }
 
@@ -28,12 +30,19 @@ func (c *Container) Draw(g *gocui.Gui, ctx *Context) error {
 	if err := c.header.Draw(g, ctx); err != nil {
 		return errors.Wrapf(err, "while drawing header")
 	}
-	c.updateLists(g, ctx)
 
+	c.updateLists(g, ctx)
 	for i := range c.lists {
 		if err := c.lists[i].Draw(g, ctx); err != nil {
 			return errors.Wrapf(err, "while drawing list %d", i)
 		}
+	}
+
+	if err := c.card.SetVisible(g, ctx.IsCardPopupOpen()); err != nil {
+		return errors.Wrapf(err, "while setting card popup visibility")
+	}
+	if err := c.card.Draw(g, ctx); err != nil {
+		return errors.Wrapf(err, "while drawing card popup")
 	}
 
 	return nil
