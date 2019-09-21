@@ -106,6 +106,10 @@ func (v *Context) CardTitle(id int) string {
 	return ""
 }
 
+func (v *Context) CardPopupTitle() string {
+	return ""
+}
+
 func (v *Context) Color(t ElementClass, isSelected bool) *color.Color {
 	setting, found := DefaultColorSettings[t]
 	if !found {
