@@ -107,6 +107,20 @@ func (s *State) CardNameByID(cardID int) (string, bool) {
 	return "", false
 }
 
+type Card struct {
+	trello.Card
+}
+
+func (s *State) SelectedCard() Card {
+	for _, c := range s.Cards {
+		if c.IdShort == s.SelectedCardID {
+			return Card{c}
+		}
+	}
+
+	return Card{}
+}
+
 func (s *State) Errors() []error {
 	return s.errors
 }

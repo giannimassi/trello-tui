@@ -13,6 +13,7 @@ type View interface {
 	ListNameByIndex(idx int) (string, bool)
 	ListCardsIds(idx int) []int
 	CardNameByID(idx int) (string, bool)
+	SelectedCard() state.Card
 	Errors() []error
 
 	// Navigation
@@ -103,10 +104,6 @@ func (v *Context) CardTitle(id int) string {
 	if name, found := v.View.CardNameByID(id); found {
 		return name
 	}
-	return ""
-}
-
-func (v *Context) CardPopupTitle() string {
 	return ""
 }
 

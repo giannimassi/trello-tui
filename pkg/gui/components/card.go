@@ -2,6 +2,7 @@ package components
 
 import (
 	"github.com/giannimassi/trello-tui/pkg/gui/panel"
+	"github.com/giannimassi/trello-tui/pkg/gui/state"
 	"github.com/jroimartin/gocui"
 	"github.com/pkg/errors"
 )
@@ -15,7 +16,7 @@ func NewCardPopup(pp panel.Parent, x0, y0, w, h float64) CardPopup {
 	return CardPopup{panel.RelativePanel("card-popup", x0, y0, w, h).WithParent(pp), false}
 }
 
-func (c *CardPopup) Draw(g *gocui.Gui, ctx *Context) error {
+func (c *CardPopup) Draw(g *gocui.Gui, parentCtx *Context) error {
 	if !c.visible {
 		return nil
 	}
@@ -24,7 +25,8 @@ func (c *CardPopup) Draw(g *gocui.Gui, ctx *Context) error {
 		return errors.Wrapf(err, "card popup layout failure")
 	}
 
-	c.Title = ctx.CardPopupTitle()
+	var ctx = CardPopUpContext{parentCtx.SelectedCard()}
+	c.Title = ctx.PanelTitle()
 	c.Autoscroll = true
 	c.SelBgColor = gocui.ColorGreen
 
@@ -45,4 +47,12 @@ func (c *CardPopup) SetVisible(g *gocui.Gui, visible bool) error {
 	}
 	c.visible = visible
 	return nil
+}
+
+type CardPopUpContext struct {
+	card state.Card
+}
+
+func (c *CardPopUpContext) PanelTitle() string {
+	return "" + c.card.Name + ""
 }
