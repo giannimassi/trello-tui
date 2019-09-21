@@ -1,17 +1,13 @@
 package state
 
-import (
-	"github.com/jroimartin/gocui"
-	"github.com/rs/zerolog/log"
-)
-
 type NavigationPosition struct {
 	SelectedBoard     string
 	SelectedListIndex int
 	SelectedCardID    int
-	SelectedCardState CardState
 	FirstListIdx      int
 	FirstCardIdxs     []int // TODO[gianni] this should not be state, or it should be on a different layer of state (visualization depends on navigation, but can be implemented  independently in gui if not required to be persisted)
+	SelectedCardState
+	BoardState
 }
 
 // View
@@ -21,6 +17,30 @@ func (n *NavigationPosition) IsListSelected(idx int) bool {
 
 func (n *NavigationPosition) IsCardSelected(id int) bool {
 	return n.SelectedCardID == id
+}
+
+func (n *NavigationPosition) IsBoardLoading() bool {
+	return n.BoardState == BoardLoading
+}
+
+func (n *NavigationPosition) IsBoardLoaded() bool {
+	return n.BoardState == BoardLoaded
+}
+
+func (n *NavigationPosition) IsBoardNotFound() bool {
+	return n.BoardState == BoardNotFound
+}
+
+func (n *NavigationPosition) IsCardPopupOpen() bool {
+	return n.SelectedCardState == CardPopupOpen
+}
+
+func (n *NavigationPosition) FirstListIndex() int {
+	return n.FirstListIdx
+}
+
+func (n *NavigationPosition) FirstCardIndex(idx int) int {
+	return n.FirstCardIdxs[idx]
 }
 
 func (n *NavigationPosition) isInitialized() bool {
@@ -39,68 +59,6 @@ func (n *NavigationPosition) selectFirstCardAvailable(s *State) {
 			}
 		}
 	}
-}
-
-func (n *NavigationPosition) update(s *State, k gocui.Key) {
-	if len(s.Lists) == 0 || len(s.Cards) < 2 {
-		return
-	}
-	switch k {
-	case gocui.KeyArrowLeft:
-		// move to first in previous list (first in current list if its the first on)
-		for i := n.SelectedListIndex - 1; i >= 0; i-- {
-			cardIDs := s.ListCardsIds(i)
-			if len(cardIDs) != 0 {
-				n.SelectedListIndex = i
-				n.SelectedCardID = cardIDs[0]
-				break
-			}
-		}
-
-	case gocui.KeyArrowRight:
-		// move to first in next list (first in current list if its the last in board)
-		for i := n.SelectedListIndex + 1; i < len(s.Lists); i++ {
-			cardIDs := s.ListCardsIds(i)
-			log.Print(cardIDs, i, n)
-			if len(cardIDs) != 0 {
-				n.SelectedListIndex = i
-				n.SelectedCardID = cardIDs[0]
-				break
-			}
-		}
-
-	case gocui.KeyArrowUp:
-		// Move to previous card in list or stop
-		cardIDs := s.ListCardsIds(n.SelectedListIndex)
-		if i := cardIndexInListFromID(cardIDs, n.SelectedCardID); i > 0 {
-			n.SelectedCardID = cardIDs[i-1]
-		}
-
-	case gocui.KeyArrowDown:
-		// move to next card or stop
-		cardIDs := s.ListCardsIds(n.SelectedListIndex)
-		if i := cardIndexInListFromID(cardIDs, n.SelectedCardID); i+1 < len(cardIDs) {
-			n.SelectedCardID = cardIDs[i+1]
-		}
-
-	case gocui.KeyEnter:
-		if s.SelectedCardState == CardLoaded {
-			s.SelectedCardState = CardSelected
-		}
-
-	case gocui.KeyEsc:
-		if s.SelectedCardState == CardSelected {
-			s.SelectedCardState = CardLoaded
-		}
-	}
-}
-
-func (n *NavigationPosition) FirstListIndex() int {
-	return n.FirstListIdx
-}
-
-func (n *NavigationPosition) FirstCardIndex(idx int) int {
-	return n.FirstCardIdxs[idx]
 }
 
 func (n *NavigationPosition) UpdateFirstListIndex(listsPerPage, totalLists int) {

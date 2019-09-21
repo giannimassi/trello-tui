@@ -4,11 +4,10 @@ import (
 	"time"
 
 	"github.com/VojtechVitek/go-trello"
-	"github.com/jroimartin/gocui"
 	"github.com/rs/zerolog/log"
 )
 
-type CardState int
+type SelectedCardState int
 type BoardState int
 
 const (
@@ -19,12 +18,11 @@ const (
 	BoardNotFound
 	BoardLoaded
 
-	// CardState
+	// SelectedCardState
 	CardUninitialized = iota
 	CardLoading
-	CardNotFound
 	CardLoaded
-	CardSelected
+	CardPopupOpen
 )
 
 type State struct {
@@ -36,7 +34,6 @@ type State struct {
 
 	errors []error
 	NavigationPosition
-	BoardState BoardState
 }
 
 func NewState() *State {
@@ -114,36 +111,13 @@ func (s *State) Errors() []error {
 	return s.errors
 }
 
-func (s *State) IsBoardLoading() bool {
-	return s.BoardState == BoardLoading
-}
-
-func (s *State) IsBoardLoaded() bool {
-	return s.BoardState == BoardLoaded
-}
-
-func (s *State) IsBoardNotFound() bool {
-	return s.BoardState == BoardNotFound
-}
-
+// Commands
 func (s *State) InitNavigation() {
 	if s.NavigationPosition.isInitialized() {
 		return
 	}
 	s.NavigationPosition.FirstCardIdxs = make([]int, len(s.Lists))
 	s.NavigationPosition.selectFirstCardAvailable(s)
-}
-
-// Commands
-func (s *State) KeyPressed(k gocui.Key, m gocui.Modifier) {
-	switch k {
-	case gocui.KeyArrowLeft, gocui.KeyArrowRight, gocui.KeyArrowUp, gocui.KeyArrowDown, gocui.KeyEnter, gocui.KeyEsc:
-		s.NavigationPosition.update(s, k)
-	}
-}
-
-func (s *State) AppendErr(err error) {
-	s.errors = append(s.errors, err)
 }
 
 func (s *State) SetBoardState(boardState BoardState) {
@@ -170,10 +144,79 @@ func (s *State) SetBoardState(boardState BoardState) {
 		s.Cards = []trello.Card{}
 		s.NavigationPosition.SelectedListIndex = -1
 		s.NavigationPosition.SelectedCardID = -1
-		s.NavigationPosition.SelectedCardState = CardNotFound
+		s.NavigationPosition.SelectedCardState = CardUninitialized
 	case BoardLoaded:
 		s.NavigationPosition.SelectedCardState = CardLoaded
 	}
 	s.BoardState = boardState
 	log.Debug().Int("old", int(prevState)).Int("new", int(s.BoardState)).Msg("board state changed")
+}
+
+func (s *State) AppendErr(err error) {
+	s.errors = append(s.errors, err)
+}
+
+func (s *State) MoveLeft() {
+	if len(s.Lists) == 0 || len(s.Cards) < 1 {
+		return
+	}
+	// move to first in previous list (first in current list if its the first on)
+	for i := s.SelectedListIndex - 1; i >= 0; i-- {
+		cardIDs := s.ListCardsIds(i)
+		if len(cardIDs) != 0 {
+			s.SelectedListIndex = i
+			s.SelectedCardID = cardIDs[0]
+			break
+		}
+	}
+}
+
+func (s *State) MoveRight() {
+	if len(s.Lists) == 0 || len(s.Cards) < 1 {
+		return
+	}
+	// move to first in next list (first in current list if its the last in board)
+	for i := s.SelectedListIndex + 1; i < len(s.Lists); i++ {
+		cardIDs := s.ListCardsIds(i)
+		log.Print(cardIDs, i, s)
+		if len(cardIDs) != 0 {
+			s.SelectedListIndex = i
+			s.SelectedCardID = cardIDs[0]
+			break
+		}
+	}
+}
+
+func (s *State) MoveUp() {
+	if len(s.Lists) == 0 || len(s.Cards) < 1 {
+		return
+	}
+	// Move to previous card in list or stop
+	cardIDs := s.ListCardsIds(s.SelectedListIndex)
+	if i := cardIndexInListFromID(cardIDs, s.SelectedCardID); i > 0 {
+		s.SelectedCardID = cardIDs[i-1]
+	}
+}
+
+func (s *State) MoveDown() {
+	if len(s.Lists) == 0 || len(s.Cards) < 1 {
+		return
+	}
+	// move to next card or stop
+	cardIDs := s.ListCardsIds(s.SelectedListIndex)
+	if i := cardIndexInListFromID(cardIDs, s.SelectedCardID); i+1 < len(cardIDs) {
+		s.SelectedCardID = cardIDs[i+1]
+	}
+}
+
+func (s *State) OpenCardPopup() {
+	if s.SelectedCardState == CardLoaded {
+		s.SelectedCardState = CardPopupOpen
+	}
+}
+
+func (s *State) CloseCardPopup() {
+	if s.SelectedCardState == CardPopupOpen {
+		s.SelectedCardState = CardLoaded
+	}
 }
