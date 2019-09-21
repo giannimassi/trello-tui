@@ -192,7 +192,6 @@ func (s *State) MoveRight() {
 	// move to first in next list (first in current list if its the last in board)
 	for i := s.SelectedListIndex + 1; i < len(s.Lists); i++ {
 		cardIDs := s.ListCardsIds(i)
-		log.Print(cardIDs, i, s)
 		if len(cardIDs) != 0 {
 			s.SelectedListIndex = i
 			s.SelectedCardID = cardIDs[0]
