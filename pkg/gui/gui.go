@@ -113,37 +113,47 @@ func (g *Gui) setupKeyBindings() error {
 	return nil
 }
 
-var navigationKeys = [...]gocui.Key{
-	gocui.KeyArrowLeft,
-	gocui.KeyArrowRight,
-	gocui.KeyArrowUp,
-	gocui.KeyArrowDown,
-	gocui.KeyEnter,
-	gocui.KeyEsc,
-	// TODO: Setup vim keys for navigation optionally
-}
-
 func (g *Gui) setupNavigationKeybindings() error {
 	var result *multierror.Error
-	for _, k := range navigationKeys {
-		if err := g.bindKeyPressed(k, gocui.ModNone); err != nil {
-			result = multierror.Append(result, err)
-		}
-	}
-	return result.ErrorOrNil()
-}
-
-func (g *Gui) bindKeyPressed(k gocui.Key, m gocui.Modifier) error {
-	keyAdapter := func(f func(k gocui.Key, m gocui.Modifier)) func(gui *gocui.Gui, v *gocui.View) error {
+	keyAdapter := func(f func()) func(gui *gocui.Gui, v *gocui.View) error {
 		return func(gui *gocui.Gui, v *gocui.View) error {
-			f(k, m)
+			f()
 			return nil
 		}
 	}
 
-	if err := g.gui.SetKeybinding("", k, m, keyAdapter(g.ctx.KeyPressed)); err != nil {
-		return errors.Wrapf(err, "while setting up key binding for left key")
+	if err := g.gui.SetKeybinding("", gocui.KeyArrowLeft, gocui.ModNone, keyAdapter(g.ctx.MoveLeft)); err != nil {
+		result = multierror.Append(result, err)
 	}
+
+	if err := g.gui.SetKeybinding("", gocui.KeyArrowRight, gocui.ModNone, keyAdapter(g.ctx.MoveRight)); err != nil {
+		result = multierror.Append(result, err)
+	}
+
+	if err := g.gui.SetKeybinding("", gocui.KeyArrowUp, gocui.ModNone, keyAdapter(g.ctx.MoveUp)); err != nil {
+		result = multierror.Append(result, err)
+	}
+
+	if err := g.gui.SetKeybinding("", gocui.KeyArrowDown, gocui.ModNone, keyAdapter(g.ctx.MoveDown)); err != nil {
+		result = multierror.Append(result, err)
+	}
+
+	if err := g.gui.SetKeybinding("", gocui.KeyEnter, gocui.ModNone, keyAdapter(g.ctx.OpenCardPopup)); err != nil {
+		result = multierror.Append(result, err)
+	}
+
+	if err := g.gui.SetKeybinding("", 'q', gocui.ModNone, keyAdapter(g.ctx.CloseCardPopup)); err != nil {
+		result = multierror.Append(result, err)
+	}
+
+	if err := g.gui.SetKeybinding("", gocui.KeyEsc, gocui.ModNone, keyAdapter(g.ctx.CloseCardPopup)); err != nil {
+		result = multierror.Append(result, err)
+	}
+
+	if result != nil {
+		return result.ErrorOrNil()
+	}
+
 	return nil
 }
 
