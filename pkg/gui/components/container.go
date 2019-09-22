@@ -22,7 +22,7 @@ func NewContainer(pp panel.Parent) Container {
 	return Container{
 		pp:     pp,
 		header: NewHeader(pp, 0, 0, 0.8, headerHeight),
-		card:   NewCardPopup(pp, 0.2, 0.1, 0.6, 0.8),
+		card:   NewCardPopup(pp, 0.2, 0.15, 0.6, 0.75),
 	}
 }
 

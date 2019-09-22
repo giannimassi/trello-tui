@@ -25,10 +25,13 @@ func (c *CardPopup) Draw(g *gocui.Gui, parentCtx *Context) error {
 		return errors.Wrapf(err, "card popup layout failure")
 	}
 
-	var ctx = CardPopUpContext{parentCtx.SelectedCard()}
-	c.Title = ctx.PanelTitle()
+	var ctx = CardPopUpContext{parentCtx, parentCtx.SelectedCard()}
+	c.Title = ctx.Title()
 	c.Autoscroll = true
 	c.SelBgColor = gocui.ColorGreen
+	c.Panel.Clear()
+	_, _ = c.Panel.Write([]byte("\n\n"))
+	_, _ = ctx.Color(CardTitleClass, false).Fprint(c.Panel, ctx.Description())
 
 	return nil
 }
@@ -50,9 +53,14 @@ func (c *CardPopup) SetVisible(g *gocui.Gui, visible bool) error {
 }
 
 type CardPopUpContext struct {
+	*Context
 	card state.Card
 }
 
-func (c *CardPopUpContext) PanelTitle() string {
-	return "" + c.card.Name + ""
+func (c *CardPopUpContext) Title() string {
+	return " " + c.card.Name + " "
+}
+
+func (c *CardPopUpContext) Description() string {
+	return " " + c.card.Desc + " "
 }

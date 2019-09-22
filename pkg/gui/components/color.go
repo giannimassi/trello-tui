@@ -10,6 +10,7 @@ const (
 	DefaultClass ElementClass = iota
 	BoardDescriptionClass
 	CardTitleClass
+	PopupCardDescriptionClass
 )
 
 type ColorSettings map[ElementClass]ColorSetting
@@ -28,5 +29,9 @@ var DefaultColorSettings = ColorSettings{
 	CardTitleClass: {
 		normal:   color.New(color.FgWhite, color.BgBlack),
 		selected: color.New(color.FgBlack, color.BgYellow),
+	},
+
+	PopupCardDescriptionClass: {
+		normal: color.New(color.FgGreen, color.BgBlack),
 	},
 }
