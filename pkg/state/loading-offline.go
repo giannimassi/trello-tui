@@ -1,6 +1,6 @@
 package state
 
-import "github.com/giannimassi/trello-tui/v2/pkg/domain"
+import "github.com/giannimassi/trello-tui/pkg/domain"
 
 type boardLoadingOffline struct {
 	boardLoading

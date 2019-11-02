@@ -6,9 +6,9 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/giannimassi/trello-tui/v2/pkg/domain"
+	"github.com/giannimassi/trello-tui/pkg/domain"
 
-	"github.com/giannimassi/trello-tui/v2/pkg/trello"
+	"github.com/giannimassi/trello-tui/pkg/trello"
 )
 
 type Config struct {

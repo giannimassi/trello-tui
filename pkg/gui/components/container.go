@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 
-	"github.com/giannimassi/trello-tui/v2/pkg/gui/panel"
+	"github.com/giannimassi/trello-tui/pkg/gui/panel"
 )
 
 const (

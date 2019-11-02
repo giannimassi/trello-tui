@@ -1,7 +1,7 @@
 package state
 
 import (
-	"github.com/giannimassi/trello-tui/v2/pkg/domain"
+	"github.com/giannimassi/trello-tui/pkg/domain"
 )
 
 type selected struct {

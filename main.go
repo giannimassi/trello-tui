@@ -10,10 +10,10 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/giannimassi/trello-tui/v2/pkg"
-	"github.com/giannimassi/trello-tui/v2/pkg/gui"
-	"github.com/giannimassi/trello-tui/v2/pkg/state"
-	"github.com/giannimassi/trello-tui/v2/pkg/trello"
+	"github.com/giannimassi/trello-tui/pkg"
+	"github.com/giannimassi/trello-tui/pkg/gui"
+	"github.com/giannimassi/trello-tui/pkg/state"
+	"github.com/giannimassi/trello-tui/pkg/trello"
 )
 
 const (

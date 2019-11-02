@@ -4,8 +4,8 @@ import (
 	"github.com/jroimartin/gocui"
 	"github.com/pkg/errors"
 
-	"github.com/giannimassi/trello-tui/v2/pkg/gui/panel"
-	"github.com/giannimassi/trello-tui/v2/pkg/gui/theme"
+	"github.com/giannimassi/trello-tui/pkg/gui/panel"
+	"github.com/giannimassi/trello-tui/pkg/gui/theme"
 )
 
 type HeaderState interface {

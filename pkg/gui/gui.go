@@ -10,8 +10,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/giannimassi/trello-tui/v2/pkg/gui/components"
-	"github.com/giannimassi/trello-tui/v2/pkg/gui/theme"
+	"github.com/giannimassi/trello-tui/pkg/gui/components"
+	"github.com/giannimassi/trello-tui/pkg/gui/theme"
 )
 
 type Config struct {
