@@ -5,7 +5,6 @@ go 1.12
 require (
 	github.com/VojtechVitek/go-trello v0.0.0-20161023024849-28ebf2756ecc
 	github.com/fatih/color v1.7.0
-	github.com/hashicorp/go-multierror v1.0.0
 	github.com/jroimartin/gocui v0.4.0
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mattn/go-isatty v0.0.9 // indirect
