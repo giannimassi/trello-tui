@@ -2,6 +2,7 @@ package components
 
 import (
 	"github.com/fatih/color"
+
 	"github.com/giannimassi/trello-tui/pkg/gui/state"
 )
 
@@ -24,7 +25,7 @@ type View interface {
 	IsBoardNotFound() bool
 	IsCardPopupOpen() bool
 	FirstListIndex() int
-	FirstCardIndex(idx int) int
+	FirstVisibleCardIndex(idx int) int
 }
 
 type Commands interface {
@@ -93,14 +94,14 @@ func (v *Context) HeaderSubtitle() string {
 	return "  " + v.Description()
 }
 
-func (v *Context) ListTitle(idx int) string {
+func (v *Context) ListName(idx int) string {
 	if name, found := v.View.ListNameByIndex(idx); found {
 		return " " + name + " "
 	}
 	return ""
 }
 
-func (v *Context) CardTitle(id int) string {
+func (v *Context) CardName(id int) string {
 	if name, found := v.View.CardNameByID(id); found {
 		return name
 	}

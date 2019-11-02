@@ -1,3 +1,5 @@
+// +build alt
+
 package main
 
 import (
@@ -10,10 +12,9 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/giannimassi/trello-tui/v2/pkg"
-	"github.com/giannimassi/trello-tui/v2/pkg/gui"
-	"github.com/giannimassi/trello-tui/v2/pkg/state"
-	"github.com/giannimassi/trello-tui/v2/pkg/trello"
+	"github.com/giannimassi/trello-tui/pkg/app"
+	"github.com/giannimassi/trello-tui/pkg/gui"
+	"github.com/giannimassi/trello-tui/pkg/trello"
 )
 
 const (
@@ -25,7 +26,7 @@ const (
 	defaultRefreshInterval = time.Second * 10
 )
 
-func setup() (pkg.Config, func()) {
+func setup() (app.Config, func()) {
 	boardName := flag.String("board", "", "board name")
 	refresh := flag.Duration("refresh", defaultRefreshInterval, fmt.Sprintf("refresh interval (min=%v)", minRefreshInterval))
 	logFlag := flag.Bool("log", false, "Log to file")
@@ -56,28 +57,24 @@ func setup() (pkg.Config, func()) {
 		*refresh = minRefreshInterval
 	}
 
-	return pkg.Config{
-		State: state.Config{
-			Trello: trello.Config{
-				User:    os.Getenv(TrelloUser),
-				Key:     os.Getenv(TrelloKey),
-				Token:   os.Getenv(TrelloToken),
-				Timeout: time.Second * 10,
-			},
-			SelectedBoard:        *boardName,
-			BoardRefreshInterval: *refresh,
+	return app.Config{
+		Trello: &trello.Config{
+			User:  os.Getenv(TrelloUser),
+			Key:   os.Getenv(TrelloKey),
+			Token: os.Getenv(TrelloToken),
 		},
-
-		Gui: gui.Config{
+		Gui: &gui.Config{
 			Dev: *v,
 		},
+		RefreshInterval: *refresh,
+		SelectBoard:     *boardName,
 	}, cleanup
 }
 
 func main() {
 	var (
 		cfg, cleanup = setup()
-		a            = pkg.NewApp(&cfg)
+		a            = app.NewApp(log.Logger, &cfg)
 	)
 	defer func() {
 		log.Info().Msg("Quitting trello-tui")

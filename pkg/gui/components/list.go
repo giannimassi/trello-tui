@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/giannimassi/trello-tui/pkg/gui/panel"
 	"github.com/jroimartin/gocui"
 	"github.com/pkg/errors"
+
+	"github.com/giannimassi/trello-tui/pkg/gui/panel"
 )
 
 const (
@@ -29,7 +30,7 @@ func (l *List) Draw(g *gocui.Gui, ctx *Context) error {
 		return errors.Wrapf(err, "list layout failure")
 	}
 
-	l.Title = ctx.ListTitle(l.idx)
+	l.Title = ctx.ListName(l.idx)
 	l.Autoscroll = true
 	l.SelBgColor = gocui.ColorGreen
 
@@ -47,7 +48,7 @@ func (l *List) Draw(g *gocui.Gui, ctx *Context) error {
 		cardIds      = ctx.ListCardsIds(l.idx)
 	)
 	ctx.UpdateFirstCardIndex(cardsPerPage+1, cardIds)
-	firstCardIdx := ctx.FirstCardIndex(l.idx)
+	firstCardIdx := ctx.FirstVisibleCardIndex(l.idx)
 
 	_, _ = l.Panel.Write([]byte("\n\n"))
 	for i, id := range cardIds {
@@ -55,7 +56,7 @@ func (l *List) Draw(g *gocui.Gui, ctx *Context) error {
 			continue
 		}
 
-		n, title := prepTitle(ctx.CardTitle(id), w-1, cardContentHeight-2)
+		n, title := prepTitle(ctx.CardName(id), w-1, cardContentHeight-2)
 		_, _ = ctx.Color(CardTitleClass, ctx.IsCardSelected(id)).Fprint(l.Panel, title)
 		_, _ = l.Panel.Write(bytes.Repeat([]byte("\n"), cardContentHeight-n-1))
 		_, _ = l.Panel.Write(bytes.Repeat([]byte("-"), w-1))
