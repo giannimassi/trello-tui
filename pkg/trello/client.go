@@ -13,21 +13,23 @@ import (
 	"github.com/giannimassi/trello-tui/pkg/domain"
 )
 
-var (
-	ErrBoardNotFound = errors.New("board not found")
-)
+// ErrBoardNotFound is returned when a board is not found
+var ErrBoardNotFound = errors.New("board not found")
 
+// Config is the trello client configuration
 type Config struct {
 	User, Key, Token string
 	Timeout          time.Duration
 }
 
+// Client makes requests via the trello API to get data for the current user
 type Client struct {
 	l      zerolog.Logger
 	cfg    *Config
 	client *trello.Client
 }
 
+// NewClient returns a new instance of Client
 func NewClient(cfg *Config) *Client {
 	return &Client{
 		l:   log.With().Str("m", "trello").Str("user", cfg.User).Logger(),
@@ -35,6 +37,8 @@ func NewClient(cfg *Config) *Client {
 	}
 }
 
+// Init setups the client with the configuration provided, connection to trello's backend
+// is initialized on the first use
 func (t *Client) Init() error {
 	rr := trello.NewBearerTokenTransport(t.cfg.Key, &t.cfg.Token)
 	httpClient := &http.Client{
@@ -52,6 +56,7 @@ func (t *Client) Init() error {
 	return nil
 }
 
+// Board returns a domain.Board populated with the latest info about the specified board
 func (t *Client) Board(name string) (*domain.Board, error) {
 	t.l.Debug().Msg("Getting boards")
 	var board trello.Board
@@ -89,24 +94,29 @@ func (t *Client) Board(name string) (*domain.Board, error) {
 		return nil, errors.Wrapf(err, "while getting cards for board %s", board.Name)
 	}
 
-	return domain.NewBoard(board.Name, board.Desc, listsById(lists, cardsByListId(cards)), len(cards) == 0), nil
+	return domain.NewBoard(board.Name, board.Desc, listsByID(lists, cardsByListID(cards)), len(cards) == 0), nil
 }
 
-func listsById(trelloCards []trello.List, cards map[string]map[int]domain.Card) []domain.List {
-	listsById := make([]domain.List, 0, len(trelloCards))
+func listsByID(trelloCards []trello.List, cards map[string]map[int]domain.Card) []domain.List {
+	lists := make([]domain.List, 0, len(trelloCards))
 	for _, c := range trelloCards {
-		listsById = append(listsById, domain.NewList(c.Id, c.Name, cards[c.Id]))
+		lists = append(lists, domain.NewList(c.Id, c.Name, cards[c.Id]))
 	}
-	return listsById
+	return lists
 }
 
-func cardsByListId(trelloCards []trello.Card) map[string]map[int]domain.Card {
+func cardsByListID(trelloCards []trello.Card) map[string]map[int]domain.Card {
 	cards := make(map[string]map[int]domain.Card)
 	for _, c := range trelloCards {
 		if cards[c.IdList] == nil {
 			cards[c.IdList] = make(map[int]domain.Card)
 		}
-		cards[c.IdList][c.IdShort] = domain.NewCard(c.Id, c.Name, c.Desc, c.Pos)
+		labels := make([]domain.CardLabel, len(c.Labels))
+		for i, lbl := range c.Labels {
+			labels[i] = domain.CardLabel{Name: lbl.Name, Color: lbl.Color}
+		}
+
+		cards[c.IdList][c.IdShort] = domain.NewCard(c.Id, c.Name, c.Desc, c.Pos, labels)
 	}
 	return cards
 }

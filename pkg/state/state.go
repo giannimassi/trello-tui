@@ -1,38 +1,39 @@
 package state
 
 import (
+	"sync"
 	"time"
 
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-
 	"github.com/giannimassi/trello-tui/pkg/domain"
+	"github.com/giannimassi/trello-tui/pkg/store"
 
 	"github.com/giannimassi/trello-tui/pkg/trello"
 )
 
+// Config is the state configuration, including trello authentication details
 type Config struct {
-	Trello trello.Config
-
+	Trello               trello.Config
 	SelectedBoard        string
 	BoardRefreshInterval time.Duration
 }
 
+// board is the interface used for managing state behaviour changes
 type board interface {
 	online(*domain.Board) board
 	offline(err error) board
 }
 
-type State struct {
-	l      zerolog.Logger
+// state implements github.com/giannimassi/trello-tui/pkg/gui `gui.State`
+type state struct {
 	cfg    *Config
 	client *trello.Client
 	board
+	m sync.RWMutex
 }
 
-func NewState(cfg *Config) *State {
-	return &State{
-		l:   log.Logger.With().Str("m", "state").Logger(),
+// newState returns a new instance of state
+func newState(cfg *Config) *state {
+	return &state{
 		cfg: cfg,
 		board: &boardLoading{
 			boardName: cfg.SelectedBoard,
@@ -40,7 +41,8 @@ func NewState(cfg *Config) *State {
 	}
 }
 
-func (s *State) ensureClientInitialized() error {
+// ensureClientInitialized checks that the client has been initialized
+func (s *state) ensureClientInitialized() error {
 	if s.client == nil {
 		client := trello.NewClient(&s.cfg.Trello)
 		if err := client.Init(); err != nil {
@@ -51,23 +53,50 @@ func (s *State) ensureClientInitialized() error {
 	return nil
 }
 
-// Update returns a copy of the current state with updated board / err
-func (s *State) Update() (*State, error) {
+// update returns a copy of the current state with updated board / err
+func (s *state) update() (*state, error) {
 	err := s.ensureClientInitialized()
 	if err != nil {
-		log.Error().Err(err).Msg("attaching err")
-		s.board = s.board.offline(err)
+		s.setBoardOffline(err)
 		return s, err
 	}
 	b, err := s.client.Board(s.cfg.SelectedBoard)
 	if err != nil {
-		s.board = s.board.offline(err)
+		s.setBoardOffline(err)
 		return s, err
 	}
-	s.board = s.online(b)
+	s.setBoardOnline(b)
 	return s, nil
 }
 
-func (s *State) State() interface{} {
-	return s.board
+func (s *state) setBoardOnline(b *domain.Board) {
+	s.BeginWrite()
+	s.board = s.online(b)
+	s.EndWrite()
+}
+
+func (s *state) setBoardOffline(err error) {
+	s.BeginWrite()
+	s.board = s.board.offline(err)
+	s.EndWrite()
+}
+
+func (s *state) storable() store.State {
+	return s.board.(store.State)
+}
+
+func (s *state) BeginWrite() {
+	s.m.Lock()
+}
+
+func (s *state) EndWrite() {
+	s.m.Unlock()
+}
+
+func (s *state) BeginRead() {
+	s.m.RLock()
+}
+
+func (s *state) EndRead() {
+	s.m.RUnlock()
 }
