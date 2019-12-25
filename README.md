@@ -2,6 +2,7 @@
 
 [![Godoc Reference](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/giannimassi/trello-tui)
 [![Go Report](https://img.shields.io/badge/go%20report-A%2B-brightgreen.svg)](https://goreportcard.com/report/github.com/giannimassi/trello-tui)
+[![CircleCI](https://circleci.com/gh/giannimassi/trello-tui/tree/master.svg?style=svg&circle-token=67192c254d187a443abf9c42ab1063c07d6ab03e)](https://circleci.com/gh/giannimassi/trello-tui/tree/master)
 
 #### A terminal ui for trello
 
