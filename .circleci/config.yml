@@ -15,7 +15,7 @@ jobs:
           name: Compile project on every platform
           command: |
             go get github.com/mitchellh/gox
-            gox -osarch "darwin/386 darwin/amd64 linux/386 linux/amd64 windows/amd64 window/386"
+            gox -osarch "darwin/amd64 linux/386 linux/amd64 windows/amd64 window/386"
       - save_cache:
           key: pkg-cache-{{ checksum "go.sum" }}-v1
           paths:
