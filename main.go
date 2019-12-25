@@ -14,7 +14,6 @@ import (
 
 	"github.com/giannimassi/trello-tui/pkg/app"
 	"github.com/giannimassi/trello-tui/pkg/gui"
-	"github.com/giannimassi/trello-tui/pkg/state"
 	"github.com/giannimassi/trello-tui/pkg/trello"
 )
 
@@ -69,13 +68,11 @@ func setup() (app.Config, func()) {
 	}
 
 	return app.Config{
-		State: state.Config{
-			Trello: trello.Config{
-				User:    os.Getenv(TrelloUser),
-				Key:     os.Getenv(TrelloKey),
-				Token:   os.Getenv(TrelloToken),
-				Timeout: time.Second * 10,
-			},
+		Trello: trello.Config{
+			User:    os.Getenv(TrelloUser),
+			Key:     os.Getenv(TrelloKey),
+			Token:   os.Getenv(TrelloToken),
+			Timeout: time.Second * 10,
 			SelectedBoard:        *boardName,
 			BoardRefreshInterval: *refresh,
 		},

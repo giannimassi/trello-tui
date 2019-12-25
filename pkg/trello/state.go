@@ -1,4 +1,4 @@
-package state
+package trello
 
 import (
 	"sync"
@@ -6,13 +6,12 @@ import (
 
 	"github.com/giannimassi/trello-tui/pkg/domain"
 	"github.com/giannimassi/trello-tui/pkg/store"
-
-	"github.com/giannimassi/trello-tui/pkg/trello"
 )
 
 // Config is the state configuration, including trello authentication details
 type Config struct {
-	Trello               trello.Config
+	User, Key, Token     string
+	Timeout              time.Duration
 	SelectedBoard        string
 	BoardRefreshInterval time.Duration
 }
@@ -26,7 +25,7 @@ type board interface {
 // state implements github.com/giannimassi/trello-tui/pkg/gui `gui.State`
 type state struct {
 	cfg    *Config
-	client *trello.Client
+	client *Client
 	board
 	m sync.RWMutex
 }
@@ -44,7 +43,7 @@ func newState(cfg *Config) *state {
 // ensureClientInitialized checks that the client has been initialized
 func (s *state) ensureClientInitialized() error {
 	if s.client == nil {
-		client := trello.NewClient(&s.cfg.Trello)
+		client := NewClient(s.cfg)
 		if err := client.Init(); err != nil {
 			return err
 		}
@@ -67,6 +66,10 @@ func (s *state) update() (*state, error) {
 	}
 	s.setBoardOnline(b)
 	return s, nil
+}
+
+func (s *state) updateCardComments(id int) {
+
 }
 
 func (s *state) setBoardOnline(b *domain.Board) {

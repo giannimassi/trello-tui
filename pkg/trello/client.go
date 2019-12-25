@@ -3,7 +3,6 @@ package trello
 import (
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/VojtechVitek/go-trello"
 	"github.com/pkg/errors"
@@ -15,12 +14,6 @@ import (
 
 // ErrBoardNotFound is returned when a board is not found
 var ErrBoardNotFound = errors.New("board not found")
-
-// Config is the trello client configuration
-type Config struct {
-	User, Key, Token string
-	Timeout          time.Duration
-}
 
 // Client makes requests via the trello API to get data for the current user
 type Client struct {

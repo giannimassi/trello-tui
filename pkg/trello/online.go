@@ -1,4 +1,4 @@
-package state
+package trello
 
 import (
 	"fmt"
@@ -32,6 +32,10 @@ func (b *boardOnline) HeaderTitle() string {
 
 func (b *boardOnline) HeaderSubtitle() string {
 	return b.Board.Description
+}
+
+func (b *boardOnline) ListsLen() int {
+	return len(b.Board.Lists)
 }
 
 func (b *boardOnline) ListName(idx int) string {
@@ -79,8 +83,19 @@ func (b *boardOnline) Description(id int) string {
 	return c.Description
 }
 
-func (b *boardOnline) ListsLen() int {
-	return len(b.Board.Lists)
+func (b *boardOnline) CardComments(id int) []string {
+	_, found := b.Board.CardByID(id)
+	if !found {
+		log.Error().Int("id", id).Msg("Card not found")
+		return []string{}
+	}
+
+	return []string{
+		"sdo fi jsdof nosd fosd",
+		"dfoisj dofg sndofismo difs",
+	}
+
+	// return c.Comments
 }
 
 func cardIndexInListFromID(cardIds []int, id int) (int, bool) {

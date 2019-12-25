@@ -5,7 +5,7 @@ import (
 	"context"
 
 	"github.com/giannimassi/trello-tui/pkg/gui"
-	"github.com/giannimassi/trello-tui/pkg/state"
+	"github.com/giannimassi/trello-tui/pkg/trello"
 	"github.com/giannimassi/trello-tui/pkg/store"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -13,7 +13,7 @@ import (
 
 // Config is the application configuration
 type Config struct {
-	State state.Config
+	Trello trello.Config
 	Gui   gui.Config
 }
 
@@ -23,7 +23,7 @@ type App struct {
 	cfg *Config
 
 	gui               *gui.Gui
-	updater           *state.Updater
+	updater           *trello.Updater
 	cancelStateUpdate context.CancelFunc
 }
 
@@ -39,7 +39,7 @@ func NewApp(cfg *Config) *App {
 // Init initializes the app's dependencies
 func (a *App) Init() error {
 	storeState, getState := store.NewStore(a.gui.Sync)
-	a.updater = state.NewUpdater(&a.cfg.State, storeState)
+	a.updater = trello.NewUpdater(&a.cfg.Trello, storeState)
 	if err := a.gui.Init(getState); err != nil {
 		a.l.Error().Err(err).Msg("Unexpected error while initializing gui")
 		return err

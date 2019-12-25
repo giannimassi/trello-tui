@@ -1,4 +1,4 @@
-package state
+package trello
 
 import "github.com/giannimassi/trello-tui/pkg/domain"
 

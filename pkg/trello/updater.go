@@ -1,4 +1,4 @@
-package state
+package trello
 
 import (
 	"context"
