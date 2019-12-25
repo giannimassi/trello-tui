@@ -1,3 +1,4 @@
+// Package app is the core of the application which manages both the back-end and front-end
 package app
 
 import (

@@ -1,3 +1,5 @@
+// trello-tui
+// A terminal ui for trello
 package main
 
 import (
@@ -28,6 +30,7 @@ const (
 	defaultRefreshInterval = time.Second * 10
 )
 
+// setup parses the configuration from flags and envronment and setups the global logger
 func setup() (app.Config, func()) {
 	boardName := flag.String("board", "", "board name")
 	refresh := flag.Duration("refresh", defaultRefreshInterval, fmt.Sprintf("refresh interval (min=%v)", minRefreshInterval))
