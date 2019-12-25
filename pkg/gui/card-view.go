@@ -7,6 +7,13 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const (
+	paddingSize     = 1
+	titleSize       = 3
+	labelsSize      = 3
+	descriptionSize = 3
+)
+
 type cardInputHandler interface {
 	switchToListContainerView()
 }
@@ -34,10 +41,10 @@ func NewCardView(state store.CardState, handler cardInputHandler) *CardView {
 	root.SetInputCapture(c.captureInput)
 	innerF := tview.NewFlex().SetDirection(tview.FlexRow)
 	// left padding
-	root.AddItem(nil, 0, 1, false)
+	root.AddItem(nil, 0, paddingSize, false)
 	root.AddItem(innerF, 0, 4, false)
 	// right padding
-	root.AddItem(nil, 0, 1, false)
+	root.AddItem(nil, 0, paddingSize, false)
 
 	title := tview.NewTextView()
 	title.SetBorder(true)
@@ -51,12 +58,12 @@ func NewCardView(state store.CardState, handler cardInputHandler) *CardView {
 	description.SetInputCapture(c.captureInput)
 
 	// top padding
-	innerF.AddItem(nil, 0, 1, false)
-	innerF.AddItem(title, 3, 1, false)
-	innerF.AddItem(labels, 3, 1, false)
-	innerF.AddItem(description, 0, 7, true)
+	innerF.AddItem(nil, 0, paddingSize, false)
+	innerF.AddItem(title, titleSize, 1, false)
+	innerF.AddItem(labels, labelsSize, 1, false)
+	innerF.AddItem(description, 0, descriptionSize, true)
 	// bottom padding
-	innerF.AddItem(nil, 0, 1, false)
+	innerF.AddItem(nil, 0, paddingSize, false)
 	c.Flex = root
 	c.title = title
 	c.labels = labels
