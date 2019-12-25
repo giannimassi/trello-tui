@@ -34,4 +34,4 @@ release:
     name: trello-tui
   prerelease: true
 
-  name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
+  name_template: "{{.ProjectName}}-v{{.Version}}"
