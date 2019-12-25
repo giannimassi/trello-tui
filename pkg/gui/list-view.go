@@ -101,10 +101,9 @@ func (l *ListView) selectedID() int {
 }
 
 func (l *ListView) selectedIndexToID(index int) int {
-	current := l.list.GetCurrentItem()
 	cardIDs := l.state.ListCardsIds(l.index)
-	if current >= len(cardIDs) {
+	if index >= len(cardIDs) {
 		return -1
 	}
-	return cardIDs[current]
+	return cardIDs[index]
 }
