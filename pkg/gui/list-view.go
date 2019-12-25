@@ -32,6 +32,7 @@ func NewListView(parent listInputHandler, state store.SingleListState) *ListView
 	ls.SetSelectedFocusOnly(true)
 	ls.SetShortcutColor(tcell.ColorBlack)
 	ls.SetInputCapture(listView.captureInput)
+	ls.SetHighlightFullLine(true)
 	ls.SetSelectedFunc(listView.handleSelected)
 	listView.list = ls
 	f := tview.NewFrame(ls)
