@@ -18,6 +18,12 @@ import (
 	"github.com/giannimassi/trello-tui/pkg/trello"
 )
 
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 const (
 	// TrelloUser is a the environment variable for storing the trello user
 	TrelloUser = "TRELLO_USER"
@@ -90,7 +96,7 @@ func main() {
 		cleanup()
 	}()
 
-	log.Info().Msg("Starting trello-tui")
+	log.Info().Str("version", version).Str("commit", commit).Str("build", date).Msg("Starting trello-tui")
 	if err := a.Init(); err != nil {
 		log.Error().Err(err).Msg("Unexpected error while initializing. Stopping application")
 		return
