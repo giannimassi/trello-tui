@@ -44,15 +44,6 @@ func NewListContainer(maxVLists int, state store.ListsState, f focuser, s switch
 	return &ls
 }
 
-// SetState updates the ListContainer component with the ListState
-func (l *ListContainer) SetState(state store.ListsState) {
-	l.state = state
-	// propagate state
-	for i := range l.listV {
-		l.listV[i].SetState(state)
-	}
-}
-
 // Draw re-implements the `tview.Primitive` interface Draw function
 func (l *ListContainer) Draw(screen tcell.Screen) {
 	// log.Debug().Int("listsLen", l.state.ListsLen()).Int("focus", l.focusedV).Msg("ListContainer.Draw")
