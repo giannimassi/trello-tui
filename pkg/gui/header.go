@@ -20,11 +20,6 @@ func NewHeader(state store.HeaderState) *Header {
 	}
 }
 
-// SetState updates the Header componer with the HeaderState
-func (h *Header) SetState(state store.HeaderState) {
-	h.state = state
-}
-
 // Draw re-implements the `tview.Primitive` interface Draw function
 func (h *Header) Draw(screen tcell.Screen) {
 	h.SetTitle(" " + h.state.HeaderTitle() + " ")

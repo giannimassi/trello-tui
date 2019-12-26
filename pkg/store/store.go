@@ -1,53 +1,43 @@
 package store
 
 import (
-	"fmt"
-	"reflect"
 	"sync"
-	"sync/atomic"
-
-	"github.com/rs/zerolog/log"
 )
 
-// PutStateFunc takes a gui.State interface as input
-type PutStateFunc func(state State)
+// Store makes State safe for concurrent use
+type Store struct {
+	State
+	stateChangedFunc func()
+	m                sync.RWMutex
+}
 
-// GetStateFunc return a State interface
-type GetStateFunc func() State
-
-// NewStore returns a put and get state functions given the stateChanged callback provided
-func NewStore(stateChanged func()) (PutStateFunc, GetStateFunc) {
-	var (
-		s        atomic.Value
-		typeLock sync.RWMutex
-	)
-	putState := func(state State) {
-		interfaceState, ok := state.(State)
-		if !ok {
-			log.Error().Interface("in", state).Str("type", fmt.Sprintf("%T", state)).Msg("Unexpected error: interface in is not State")
-			return
-		}
-
-		previous := s.Load()
-		if reflect.TypeOf(previous) != reflect.TypeOf(interfaceState) {
-			typeLock.Lock()
-			s = atomic.Value{}
-			typeLock.Unlock()
-		}
-		s.Store(interfaceState)
-		stateChanged()
+// NewStore returns a new instate of Store
+func NewStore(state State) *Store {
+	return &Store{
+		State:            state,
+		stateChangedFunc: func() {},
 	}
+}
 
-	getState := func() State {
-		typeLock.RLock()
-		defer typeLock.RUnlock()
-		state := s.Load()
-		stateInterface, ok := state.(State)
-		if !ok {
-			log.Error().Interface("out", state).Str("type", fmt.Sprintf("%T", state)).Msg("Unexpected error: interface out is not State")
-			return nil
-		}
-		return stateInterface
+// BeginWrite acquires a write lock
+func (s *Store) BeginWrite() { s.m.Lock() }
+
+// EndWrite releases a write lock and calls `stateChangedFunc` if necessary
+func (s *Store) EndWrite(changed bool) {
+	s.m.Unlock()
+	if changed {
+		s.stateChangedFunc()
 	}
-	return putState, getState
+}
+
+// BeginRead acquires a read lock
+func (s *Store) BeginRead() { s.m.RLock() }
+
+// EndRead releases a read lock
+func (s *Store) EndRead() { s.m.RUnlock() }
+
+// SetStateChangedFunc configures a callback on state changes, called after unlocking
+// write lock. Used to hook gui re=-draw to state changes.
+func (s *Store) SetStateChangedFunc(f func()) {
+	s.stateChangedFunc = f
 }

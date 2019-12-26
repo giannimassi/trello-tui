@@ -1,8 +1,8 @@
 package gui
 
 import (
-	"sync"
 
+	"github.com/gdamore/tcell"
 	"github.com/giannimassi/trello-tui/pkg/store"
 	"github.com/rivo/tview"
 	"github.com/rs/zerolog"
@@ -20,10 +20,6 @@ type Gui struct {
 	cfg  *Config
 	app  *tview.Application
 	view *View
-
-	state store.GetStateFunc
-
-	rw sync.RWMutex
 }
 
 // NewGui creates a new instance of `Gui` from the provide configuration
@@ -31,15 +27,25 @@ func NewGui(cfg *Config) *Gui {
 	return &Gui{
 		l:   log.Logger.With().Str("m", "gui").Logger(),
 		cfg: cfg,
+		app: tview.NewApplication(),
 	}
 }
 
 // Init initializes the gui
-func (g *Gui) Init(getState store.GetStateFunc) error {
+func (g *Gui) Init(store *store.Store) error {
+	g.view = NewView(store, g)
+	// Hook state changed to re-draw func
+	store.SetStateChangedFunc(g.ReDraw)
+	// Lock state before drawing
+	g.app.SetBeforeDrawFunc(func(screen tcell.Screen) bool {
+		store.BeginRead()
+		return false
+	})
+	// Unlock state after drawing
+	g.app.SetAfterDrawFunc(func(screen tcell.Screen) {
+		store.EndRead()
+	})
 	g.l.Info().Msg("Initialized")
-	g.app = tview.NewApplication()
-	g.state = getState
-	g.view = NewView(g.state(), g)
 	return nil
 }
 
@@ -62,25 +68,8 @@ func (g *Gui) Close() {
 	g.l.Debug().Msg("Closing")
 }
 
-// Sync updates the gui with the latest state
-func (g *Gui) Sync() {
-	if g.view == nil {
-		log.Error().Msg("nil view")
-		return
-	}
-
-	s := g.state()
-	if s == nil {
-		log.Error().Msg("nil state")
-		return
-	}
-	// apply state changes and draw
-	g.app.QueueUpdateDraw(func() {
-		defer func() {
-			if err := recover(); err != nil {
-				g.l.Error().Interface("recover", err).Msg("recovered panic while setting state")
-			}
-		}()
-		g.view.SetState(s)
-	})
+// ReDraw updates the gui with the latest state
+func (g *Gui) ReDraw() {
+	// trigger re-draw
+	g.app.QueueUpdateDraw(func() {})
 }

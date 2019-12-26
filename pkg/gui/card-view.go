@@ -79,11 +79,6 @@ func (c *CardView) FocusedItem() tview.Primitive {
 // CardView is in charge of returning navigation to list container
 // if the id points to unexistent card id
 
-// SetState updates the CardView component with the CardState
-func (c *CardView) SetState(s store.CardState) {
-	c.state = s
-}
-
 // Draw re-implements the `tview.Primitive` interface Draw function
 func (c *CardView) Draw(screen tcell.Screen) {
 	c.title.SetText(c.state.CardName(c.id))

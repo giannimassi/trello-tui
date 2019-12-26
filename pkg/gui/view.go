@@ -15,6 +15,8 @@ type View struct {
 
 	focuser     focuser
 	cardFocused bool
+
+	state store.State
 }
 
 type focuser interface {
@@ -27,14 +29,14 @@ const (
 )
 
 // NewView returns a new instance of View
-func NewView(state store.ViewState, f focuser) *View {
+func NewView(s store.State, f focuser) *View {
 	var (
 		v = View{
 			focuser: f,
 		}
-		header        = NewHeader(state)
-		listContainer = NewListContainer(3, state, f, &v)
-		card          = NewCardView(state, &v)
+		header        = NewHeader(s)
+		listContainer = NewListContainer(3, s, f, &v)
+		card          = NewCardView(s, &v)
 		flex          = tview.NewFlex().
 				SetFullScreen(true).
 				SetDirection(tview.FlexRow).
@@ -45,14 +47,8 @@ func NewView(state store.ViewState, f focuser) *View {
 	v.header = header
 	v.listContainer = listContainer
 	v.card = card
+	v.state = s
 	return &v
-}
-
-// SetState updates the View with the ViewState
-func (v *View) SetState(s store.ViewState) {
-	v.header.SetState(s)
-	v.listContainer.SetState(s)
-	v.card.SetState(s)
 }
 
 // FocusedItem returns the gui component currently in focus

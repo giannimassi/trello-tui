@@ -1,24 +1,43 @@
 package trello
 
 import (
-	"fmt"
 	"strings"
 
-	"github.com/giannimassi/trello-tui/pkg/domain"
+	"github.com/VojtechVitek/go-trello"
+	"github.com/giannimassi/trello-tui/pkg/store"
 	"github.com/rs/zerolog/log"
 )
 
 type boardOnline struct {
 	boardLoading
-	Board *domain.Board
+	Board              *trello.Board
+	Lists              []trello.List
+	CardIDsByListIndex [][]int
+	CardsByID          map[int]trello.Card
 }
 
-func (b *boardOnline) online(newBoard *domain.Board) board {
+func (b *boardOnline) online(newBoard *trello.Board, lists []trello.List, cards []trello.Card) store.State {
 	b.Board = newBoard
+	b.Lists = lists
+	var listIndexes = make(map[string]int, len(lists))
+	for i, ls := range lists {
+		listIndexes[ls.Id] = i
+	}
+	b.CardIDsByListIndex = make([][]int, len(lists))
+	b.CardsByID = make(map[int]trello.Card, len(cards))
+	for _, c := range cards {
+		listIndex := listIndexes[c.IdList]
+		if b.CardIDsByListIndex[listIndex] == nil {
+			b.CardIDsByListIndex[listIndex] = make([]int, 0)
+		}
+		b.CardIDsByListIndex[listIndex] = append(b.CardIDsByListIndex[listIndex], c.IdShort)
+		b.CardsByID[c.IdShort] = c
+	}
+
 	return b
 }
 
-func (b *boardOnline) offline(err error) board {
+func (b *boardOnline) offline(err error) store.State {
 	offline := &boardOffline{
 		boardOnline: *b,
 		err:         err,
@@ -31,38 +50,38 @@ func (b *boardOnline) HeaderTitle() string {
 }
 
 func (b *boardOnline) HeaderSubtitle() string {
-	return b.Board.Description
+	return b.Board.Desc
 }
 
 func (b *boardOnline) ListsLen() int {
-	return len(b.Board.Lists)
+	return len(b.Lists)
 }
 
 func (b *boardOnline) ListName(idx int) string {
-	if idx >= len(b.Board.Lists) {
+	if idx >= len(b.Lists) {
 		return ""
 	}
-	return b.Board.Lists[idx].Name
+	return b.Lists[idx].Name
 }
 
 func (b *boardOnline) ListCardsIds(idx int) []int {
-	if idx >= len(b.Board.Lists) {
+	if idx >= len(b.Lists) {
 		return []int{}
 	}
-	return b.Board.Lists[idx].CartIds
+	return b.CardIDsByListIndex[idx]
 }
 
 func (b *boardOnline) CardName(id int) string {
-	c, found := b.Board.CardByID(id)
+	c, found := b.CardsByID[id]
 	if !found {
 		log.Error().Int("id", id).Msg("Card not found")
 		return ""
 	}
-	return fmt.Sprintf("%s", c.Name)
+	return c.Name
 }
 
 func (b *boardOnline) CardLabelsStr(id int) string {
-	c, found := b.Board.CardByID(id)
+	c, found := b.CardsByID[id]
 	if !found {
 		log.Error().Int("id", id).Msg("Card not found")
 		return ""
@@ -75,16 +94,16 @@ func (b *boardOnline) CardLabelsStr(id int) string {
 }
 
 func (b *boardOnline) Description(id int) string {
-	c, found := b.Board.CardByID(id)
+	c, found := b.CardsByID[id]
 	if !found {
 		log.Error().Int("id", id).Msg("Card not found")
 		return ""
 	}
-	return c.Description
+	return c.Desc
 }
 
 func (b *boardOnline) CardComments(id int) []string {
-	_, found := b.Board.CardByID(id)
+	_, found := b.CardsByID[id]
 	if !found {
 		log.Error().Int("id", id).Msg("Card not found")
 		return []string{}
@@ -94,15 +113,4 @@ func (b *boardOnline) CardComments(id int) []string {
 		"sdo fi jsdof nosd fosd",
 		"dfoisj dofg sndofismo difs",
 	}
-
-	// return c.Comments
-}
-
-func cardIndexInListFromID(cardIds []int, id int) (int, bool) {
-	for i, cardID := range cardIds {
-		if cardID == id {
-			return i, true
-		}
-	}
-	return 0, false
 }

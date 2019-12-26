@@ -41,11 +41,6 @@ func NewListView(parent listInputHandler, state store.SingleListState) *ListView
 	return &listView
 }
 
-// SetState updates the ListView component with the SingleListState
-func (l *ListView) SetState(state store.SingleListState) {
-	l.state = state
-}
-
 // Draw re-implements the `tview.Primitive` interface Draw function
 func (l *ListView) Draw(screen tcell.Screen) {
 	l.SetTitle(" " + l.state.ListName(l.index) + " ")

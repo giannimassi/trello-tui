@@ -1,23 +1,22 @@
 package trello
 
 import (
-	"github.com/giannimassi/trello-tui/pkg/domain"
+	"github.com/VojtechVitek/go-trello"
+	"github.com/giannimassi/trello-tui/pkg/store"
 )
 
 type boardLoading struct {
 	boardName string
 }
 
-var _ board = &boardLoading{}
-
-func (b *boardLoading) online(newBoard *domain.Board) board {
+func (b *boardLoading) online(newBoard *trello.Board, lists []trello.List, cards []trello.Card) store.State {
 	onlineBoard := &boardOnline{
 		boardLoading: *b,
 	}
-	return onlineBoard.online(newBoard)
+	return onlineBoard.online(newBoard, lists, cards)
 }
 
-func (b *boardLoading) offline(err error) board {
+func (b *boardLoading) offline(err error) store.State {
 	offline := &boardLoadingOffline{
 		boardLoading: *b,
 		err:          err,
