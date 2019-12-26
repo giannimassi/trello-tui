@@ -3,7 +3,6 @@ package gui
 import (
 	"github.com/giannimassi/trello-tui/pkg/store"
 	"github.com/rivo/tview"
-	"github.com/rs/zerolog/log"
 )
 
 // View is the root gui component
@@ -62,7 +61,6 @@ func (v *View) FocusedItem() tview.Primitive {
 }
 
 func (v *View) switchToCardView(id int) {
-	log.Debug().Int("id", id).Msg("switching to card view")
 	// remove list container
 	v.RemoveItem(v.listContainer)
 	// add card view
