@@ -4,7 +4,6 @@ import (
 	"github.com/gdamore/tcell"
 	"github.com/giannimassi/trello-tui/pkg/store"
 	"github.com/rivo/tview"
-	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -99,7 +98,5 @@ func (c *CardView) captureInput(event *tcell.EventKey) *tcell.EventKey {
 	case tcell.KeyEnter:
 		return nil
 	}
-
-	log.Debug().Msg("captured input")
 	return event
 }
