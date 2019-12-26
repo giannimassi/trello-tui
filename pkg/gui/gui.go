@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"runtime/debug"
 
 	"github.com/gdamore/tcell"
 	"github.com/giannimassi/trello-tui/pkg/store"
@@ -58,6 +59,12 @@ func (g *Gui) SetFocus(p tview.Primitive) {
 
 // Run executes the gui and event loop
 func (g *Gui) Run() error {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Error().Interface("recover", err).Msg("panic in run: \n" + string(debug.Stack()))
+		}
+	}()
+
 	g.app.SetRoot(g.view, true)
 	g.app.SetFocus(g.view.FocusedItem())
 	return g.app.Run()
