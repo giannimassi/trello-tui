@@ -13,7 +13,7 @@ import (
 // Config is the application configuration
 type Config struct {
 	Trello trello.Config
-	Gui   gui.Config
+	Gui    gui.Config
 }
 
 // App is the type in charge of handling application lifecycle

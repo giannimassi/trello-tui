@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	paddingSize     = 1
-	titleSize       = 3
-	labelsSize      = 3
-	descriptionSize = 3
+	paddingRelSize     = 1
+	titleFixedSize     = 3
+	labelsFixedSize    = 3
+	descriptionRelSize = 3
 )
 
 type cardInputHandler interface {
@@ -41,10 +41,10 @@ func NewCardView(state store.CardState, handler cardInputHandler) *CardView {
 	root.SetInputCapture(c.captureInput)
 	innerF := tview.NewFlex().SetDirection(tview.FlexRow)
 	// left padding
-	root.AddItem(nil, 0, paddingSize, false)
+	root.AddItem(nil, 0, paddingRelSize, false)
 	root.AddItem(innerF, 0, 4, false)
 	// right padding
-	root.AddItem(nil, 0, paddingSize, false)
+	root.AddItem(nil, 0, paddingRelSize, false)
 
 	title := tview.NewTextView()
 	title.SetBorder(true)
@@ -58,12 +58,12 @@ func NewCardView(state store.CardState, handler cardInputHandler) *CardView {
 	description.SetInputCapture(c.captureInput)
 
 	// top padding
-	innerF.AddItem(nil, 0, paddingSize, false)
-	innerF.AddItem(title, titleSize, 1, false)
-	innerF.AddItem(labels, labelsSize, 1, false)
-	innerF.AddItem(description, 0, descriptionSize, true)
+	innerF.AddItem(nil, 0, paddingRelSize, false)
+	innerF.AddItem(title, titleFixedSize, 1, false)
+	innerF.AddItem(labels, labelsFixedSize, 1, false)
+	innerF.AddItem(description, 0, descriptionRelSize, true)
 	// bottom padding
-	innerF.AddItem(nil, 0, paddingSize, false)
+	innerF.AddItem(nil, 0, paddingRelSize, false)
 	c.Flex = root
 	c.title = title
 	c.labels = labels
@@ -76,11 +76,10 @@ func (c *CardView) FocusedItem() tview.Primitive {
 	return c.description
 }
 
-// CardView is in charge of returning navigation to list container
-// if the id points to unexistent card id
-
 // Draw re-implements the `tview.Primitive` interface Draw function
 func (c *CardView) Draw(screen tcell.Screen) {
+	// TODO: CardView should be in charge of returning navigation
+	// to list container if the id points to unexistent card id
 	c.title.SetText(c.state.CardName(c.id))
 	c.labels.SetText(c.state.CardLabelsStr(c.id))
 	c.description.SetText(c.state.Description(c.id))
