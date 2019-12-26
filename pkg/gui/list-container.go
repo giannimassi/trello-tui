@@ -66,7 +66,7 @@ func (l *ListContainer) Draw(screen tcell.Screen) {
 func (l *ListContainer) handleSelectPreviousList() {
 	if l.focusedV != 0 {
 		l.focusedV--
-		l.focuser.SetFocus(l.listV[l.focusedV].list)
+		l.focuser.SetFocus(l.listV[l.focusedV])
 	} else if l.firstV > 0 {
 		l.firstV--
 	}
@@ -75,7 +75,7 @@ func (l *ListContainer) handleSelectPreviousList() {
 func (l *ListContainer) handleSelectNextList() {
 	if l.focusedV < l.maxV-1 {
 		l.focusedV++
-		l.focuser.SetFocus(l.listV[l.focusedV].list)
+		l.focuser.SetFocus(l.listV[l.focusedV])
 	} else if l.firstV+l.maxV+1 < l.listALen {
 		l.firstV++
 	}
@@ -90,5 +90,5 @@ func (l *ListContainer) FocusedItem() tview.Primitive {
 	if len(l.listV) == 0 {
 		return nil
 	}
-	return l.listV[l.focusedV].list
+	return l.listV[l.focusedV]
 }

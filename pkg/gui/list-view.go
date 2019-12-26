@@ -15,11 +15,9 @@ type listInputHandler interface {
 // ListView is a gui component in charge of displaying a single board list
 type ListView struct {
 	parent listInputHandler
-	*tview.Frame
-	list     *tview.List
-	index    int
-	state    store.SingleListState
-	hasFocus bool
+	*tview.List
+	index int
+	state store.SingleListState
 }
 
 // NewListView returns a new instance of ListView
@@ -29,15 +27,13 @@ func NewListView(parent listInputHandler, state store.SingleListState) *ListView
 		state:  state,
 	}
 	ls := tview.NewList()
+	ls.SetBorder(true)
 	ls.SetSelectedFocusOnly(true)
 	ls.SetShortcutColor(tcell.ColorBlack)
 	ls.SetInputCapture(listView.captureInput)
 	ls.SetHighlightFullLine(true)
 	ls.SetSelectedFunc(listView.handleSelected)
-	listView.list = ls
-	f := tview.NewFrame(ls)
-	f.SetBorder(true)
-	listView.Frame = f
+	listView.List = ls
 	return &listView
 }
 
@@ -45,7 +41,7 @@ func NewListView(parent listInputHandler, state store.SingleListState) *ListView
 func (l *ListView) Draw(screen tcell.Screen) {
 	l.SetTitle(" " + l.state.ListName(l.index) + " ")
 	l.updateListItems(l.state.ListCardsIds(l.index))
-	l.Frame.Draw(screen)
+	l.List.Draw(screen)
 }
 
 func (l *ListView) updateListItems(cardIds []int) {
@@ -53,16 +49,16 @@ func (l *ListView) updateListItems(cardIds []int) {
 		cardName := l.state.CardName(id)
 		cardLabels := l.state.CardLabelsStr(id) + "\n\n"
 		// Add new list items
-		if i >= l.list.GetItemCount() {
-			l.list.AddItem(cardName, " ", ' ', nil)
+		if i >= l.GetItemCount() {
+			l.AddItem(cardName, " ", ' ', nil)
 		}
 		// Update existing list items
-		if oldTitle, oldLbls := l.list.GetItemText(i); oldTitle != cardName || oldLbls != cardLabels {
-			l.list.SetItemText(i, cardName, cardLabels)
+		if oldTitle, oldLbls := l.GetItemText(i); oldTitle != cardName || oldLbls != cardLabels {
+			l.SetItemText(i, cardName, cardLabels)
 		}
 		// Remove deleted list items
-		for i := l.list.GetItemCount() - 1; i >= len(cardIds); i-- {
-			l.list.RemoveItem(i)
+		for i := l.GetItemCount() - 1; i >= len(cardIds); i-- {
+			l.RemoveItem(i)
 		}
 	}
 }
@@ -84,15 +80,6 @@ func (l *ListView) captureInput(event *tcell.EventKey) *tcell.EventKey {
 
 func (l *ListView) handleSelected(index int, _, _ string, _ rune) {
 	l.parent.handleCardSelected(l.selectedIndexToID(index))
-}
-
-func (l *ListView) selectedID() int {
-	current := l.list.GetCurrentItem()
-	cardIDs := l.state.ListCardsIds(l.index)
-	if current >= len(cardIDs) {
-		return -1
-	}
-	return cardIDs[current]
 }
 
 func (l *ListView) selectedIndexToID(index int) int {
