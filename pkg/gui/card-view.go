@@ -87,6 +87,11 @@ func (c *CardView) Draw(screen tcell.Screen) {
 }
 
 func (c *CardView) captureInput(event *tcell.EventKey) *tcell.EventKey {
+	if event.Rune() == 'q' {
+		c.handler.switchToListContainerView()
+		return event
+	}
+
 	switch event.Key() {
 	case tcell.KeyEsc:
 		c.handler.switchToListContainerView()
