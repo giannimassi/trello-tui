@@ -61,9 +61,8 @@ func (u *Backend) cardCommentsRequested(card *trello.Card) {
 
 // Run executes the loop exuting the requests via the trello client
 func (u *Backend) Run(ctx context.Context) {
-	var (
-		t = time.NewTimer(0)
-	)
+	t := time.NewTimer(0)
+
 	u.l.Debug().Msg("Refresh state started")
 	for {
 		select {

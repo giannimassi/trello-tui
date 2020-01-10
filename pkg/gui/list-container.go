@@ -46,7 +46,6 @@ func NewListContainer(maxVLists int, state store.ListsState, f focuser, s switch
 
 // Draw re-implements the `tview.Primitive` interface Draw function
 func (l *ListContainer) Draw(screen tcell.Screen) {
-	// log.Debug().Int("listsLen", l.state.ListsLen()).Int("focus", l.focusedV).Msg("ListContainer.Draw")
 	l.listALen = l.state.ListsLen()
 	// Check if there are less lists since last time state was set
 	if l.focusedV >= l.listALen {

@@ -44,8 +44,8 @@ func (l *ListView) Draw(screen tcell.Screen) {
 	l.List.Draw(screen)
 }
 
-func (l *ListView) updateListItems(cardIds []int) {
-	for i, id := range cardIds {
+func (l *ListView) updateListItems(cardIDs []int) {
+	for i, id := range cardIDs {
 		cardName := l.state.CardName(id)
 		cardLabels := l.state.CardLabelsStr(id) + "\n\n"
 		// Add new list items
