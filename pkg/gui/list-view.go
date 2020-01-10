@@ -56,10 +56,10 @@ func (l *ListView) updateListItems(cardIds []int) {
 		if oldTitle, oldLbls := l.GetItemText(i); oldTitle != cardName || oldLbls != cardLabels {
 			l.SetItemText(i, cardName, cardLabels)
 		}
-		// Remove deleted list items
-		for i := l.GetItemCount() - 1; i >= len(cardIds); i-- {
-			l.RemoveItem(i)
-		}
+	}
+	// Remove deleted list items
+	for i := l.GetItemCount() - 1; i >= len(cardIDs); i-- {
+		l.RemoveItem(i)
 	}
 }
 
