@@ -35,4 +35,5 @@ type CardState interface {
 	CardName(id int) string
 	CardLabelsStr(id int) string
 	Description(id int) string
+	CardComments(id int) []string
 }

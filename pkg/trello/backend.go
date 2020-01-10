@@ -24,19 +24,39 @@ type Backend struct {
 	cfg    *Config
 	client *Client
 	store  *store.Store
+
+	lastActionUpdate map[int]time.Time
+
+	// Buffered channel drained in Run
+	refreshCardActionsCh chan *trello.Card
 }
 
 // NewBackend returns a new instance of Backend
 func NewBackend(cfg *Config) *Backend {
 	u := Backend{
-		l:      log.Logger.With().Str("m", "state-update").Logger(),
-		cfg:    cfg,
-		client: NewClient(cfg),
-		store: store.NewStore(&boardLoading{
-			boardName: cfg.SelectedBoard,
-		}),
+		l:                    log.Logger.With().Str("m", "state-update").Logger(),
+		cfg:                  cfg,
+		client:               NewClient(cfg),
+		refreshCardActionsCh: make(chan *trello.Card, 100),
+		lastActionUpdate:     make(map[int]time.Time),
 	}
+	u.store = store.NewStore(&boardLoading{
+		boardName:             cfg.SelectedBoard,
+		cardCommentsRequested: u.cardCommentsRequested,
+	})
+
 	return &u
+}
+
+// should not block for
+func (u *Backend) cardCommentsRequested(card *trello.Card) {
+	// send on channel with timeout
+	select {
+	case u.refreshCardActionsCh <- card:
+		return
+	case <-time.After(time.Second):
+		return
+	}
 }
 
 // Run executes the loop exuting the requests via the trello client
@@ -56,8 +76,12 @@ func (u *Backend) Run(ctx context.Context) {
 			if err := u.updateBoard(); err != nil {
 				u.l.Error().Err(err).Msg("Could not update board")
 			}
-			// u.put(u.storable())
 			t.Reset(u.cfg.BoardRefreshInterval - time.Since(now))
+		case id := <-u.refreshCardActionsCh:
+			u.l.Debug().Msg("Refreshing card actions")
+			if err := u.updateCardActions(id); err != nil {
+				u.l.Error().Err(err).Msg("Could not update card actions")
+			}
 		}
 	}
 }
@@ -67,6 +91,7 @@ func (u *Backend) Store() *store.Store {
 	return u.store
 }
 
+// FIXME: update comment
 // updateBoard returns a copy of the current state with updated board / err
 func (u *Backend) updateBoard() error {
 	b, lists, cards, err := u.client.Board(u.cfg.SelectedBoard)
@@ -75,6 +100,36 @@ func (u *Backend) updateBoard() error {
 		return err
 	}
 	u.online(b, lists, cards)
+	return nil
+}
+
+// FIXME: add comment
+func (u *Backend) updateCardActions(card *trello.Card) error {
+	// check when card actions where last updated
+	lastUpdated, found := u.lastActionUpdate[card.IdShort]
+	// TODO: separate refresh interval for actions?
+	if found && time.Since(lastUpdated) < u.cfg.BoardRefreshInterval {
+		return nil
+	}
+
+	actions, err := u.client.CardActions(card)
+	if err != nil {
+		return err
+	}
+	updated := time.Now()
+	u.store.BeginWrite()
+	switch t := u.store.State.(type) {
+	case *boardOnline:
+		u.store.State = t.setCardActions(card.IdShort, actions)
+	case *boardOffline:
+		u.store.State = t.setCardActions(card.IdShort, actions)
+	default:
+		log.Error().Msg("unexpected board state")
+		u.store.EndWrite(false)
+		return nil
+	}
+	u.store.EndWrite(true)
+	u.lastActionUpdate[card.IdShort] = updated
 	return nil
 }
 

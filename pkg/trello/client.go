@@ -73,3 +73,8 @@ func (t *Client) Board(name string) (*trello.Board, []trello.List, []trello.Card
 	}
 	return &board, lists, cards, nil
 }
+
+// CardActions returns a list of trello.Action for the provided card
+func (t *Client) CardActions(card *trello.Card) ([]trello.Action, error) {
+	return card.Actions()
+}

@@ -6,7 +6,8 @@ import (
 )
 
 type boardLoading struct {
-	boardName string
+	boardName             string
+	cardCommentsRequested func(card *trello.Card)
 }
 
 func (b *boardLoading) online(newBoard *trello.Board, lists []trello.List, cards []trello.Card) store.State {
